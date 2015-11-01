@@ -1,0 +1,67 @@
+@font-face{
+	font-family: 'octicons';
+	src:	url("fonts/octicons.eot?#iefix") format("embedded-opentype"),
+			url("fonts/octicons.woff") format("woff"),
+			url("fonts/octicons.ttf") format("truetype"),
+			url("fonts/octicons.svg#octicons") format("svg");
+}
+
+
+body,
+a	{
+	color: #333;
+}
+body > section	{
+	background: #FAFAFA;
+	margin: auto;
+	min-height: 30em;
+	padding: 1em 3em;
+	width: 60em;
+}
+h1	{
+	font-size: 1.3em;
+	margin: 1em 0;
+	text-align: center;
+}
+form	{
+	margin: 1em 0 2em 0;
+}
+input	{
+	border: 1px solid #333;
+	border-radius: .25em;
+	margin-right: 2em;
+	text-align: center;
+	width: 15em;
+}
+input:focus	{
+	border-color: #60B044;
+}
+[type="submit"]	{
+	background: #60B044;
+	color: #FFF;
+}
+[type="submit"]:focus	{
+	background: #8ADD6D;
+}
+ol	{
+	margin-top: 2em;
+}
+li	{
+	list-style-type: decimal;
+	margin-left: 1em;
+	padding: 1em;
+}
+li.off	{
+	display: none;
+}
+li a:first-child ~ *	{
+	font-size: .75em;
+}
+li a:first-child + span	{
+	display: inline-block;
+	margin-left: 1em;
+}
+li span + a:after	{
+	content:'\F05F';
+	font-family: octicons;
+}

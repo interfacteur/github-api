@@ -1,0 +1,20 @@
+Options +FollowSymlinks
+RewriteEngine on
+
+<IfModule dir_module>
+
+	RewriteRule (.+)/+$ /$1 [L,R]
+		#reduire les slash doubles en slash unique
+
+	DirectoryIndex /index.html
+		#index.html est la page d'accueil par defaut
+
+	RewriteRule index.html$ / [R]
+		#reecrire index.html en /
+
+	ErrorDocument 404 /
+		#index.html est la page 404
+
+
+</IfModule>
+

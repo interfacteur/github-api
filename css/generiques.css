@@ -1,0 +1,211 @@
+*	{
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+html	{
+	-ms-text-size-adjust: 100%;
+	-webkit-text-size-adjust: 100%;
+	font-family: sans-serif;
+	height: 100%;
+}
+body	{
+	background: #FFF;
+	color: #000;
+	line-height: 1;
+	min-height: 100%;
+}
+body::before	{
+	content: "\8";
+	display: block;
+	height: 0;
+	text-indent: -4444px;
+}
+body::after	{
+	clear: both;
+	content: " ";
+	display: block;
+}
+
+/*
+	RESET (median) */
+html, body, div, iframe,
+header, nav, main, section, article, aside,
+h1, h2, h3, h4, h5, h6, p, pre,
+dl, dt, dd, ol, ul, li,
+form, fieldset, legend,
+button, input, keygen, optgroup, output, select, textarea,
+table, caption, tbody, tfoot, thead, tr, th, td,
+figure, figcaption, summary, details,
+audio, canvas, embed, math, object, svg, video,
+ruby, meter, progress	{
+	margin: 0;
+	padding: 0;
+}
+img, a img, img[usemap],
+fieldset	{
+	border: 0;
+}
+
+/*
+	NORMALIZE (reduced - for typo and form, see bottom) */
+article, aside, details, figcaption, figure, footer,
+header, main, menu, nav, section, summary	{
+	display: block;
+}
+ol, ul, li	{
+	list-style: none;
+}
+table	{
+	border-collapse: collapse;
+	border-spacing: 0;
+	table-layout: auto;
+}
+textarea, iframe	{
+	vertical-align: top;
+}
+img,
+button, input, keygen, output, select, textarea, label,
+audio, canvas, embed, math, object, svg, video,
+progress, meter	{
+	vertical-align: middle;
+}
+span, a, abbr, cite, code, del, dfn, em, ins,
+kbd, q, s, samp, small, strong, var, b, u, i, time, mark, ruby, bdo, bdi	{
+	vertical-align: baseline;
+}
+pre	{
+	overflow: auto;
+}
+hr	{
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+	height: 0;
+}
+audio:not([controls])	{
+	display: none;
+	height: 0;
+}
+svg:not(:root)	{
+	overflow: hidden;
+}
+[hidden],
+template	{
+	display: none;
+}
+
+/*
+	TYPOGRAPHY */
+a	{
+	background: transparent;
+}
+a:focus	{
+	outline: thin dotted;
+}
+a:active, a:hover	{
+	outline: 0;
+}
+abbr[title]	{
+	border-bottom: 1px dotted;
+}
+b, strong	{
+	font-weight: bold;
+}
+dfn	{
+	font-style: italic;
+}
+mark	{
+	background: #FF0;
+	color: #000;
+}
+code, kbd, pre, samp	{
+	font-family: monospace, serif;
+	font-size: 1em;
+}
+blockquote, q	{
+	quotes : "\201C" "\201D" "\2018" "\2019";
+}
+:lang(fr) blockquote	{
+	quotes: "\AB\20" "\20\BB" "\2039" "\203A";
+}
+:lang(fr) q	{
+	quotes: "\22" "\22" "\27" "\27";
+}
+blockquote:before, q:before	{
+	content: open-quote;
+}
+blockquote:after, q:after	{
+	content: close-quote;
+}
+small	{
+	font-size: 80%;
+}
+sub, sup	{
+	line-height: 0;
+	position: relative;
+	vertical-align: 0;
+}
+sup	{
+	bottom: 1ex;
+}
+sub	{
+	top: .5ex;
+}
+optgroup	{
+	font-weight: bold;
+}
+
+/*
+	FORM (melting) */
+button, input, keygen, optgroup, output, select, textarea	{
+	color: inherit;
+	font: inherit;
+	font-size: 100%;
+}
+textarea	{
+	overflow: auto;
+	resize: vertical;
+}
+button	{
+	overflow: visible;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+button, select	{
+	text-transform: none;
+}
+button, input	{
+	line-height: normal;
+}
+button, html input[type="button"],
+input[type="reset"], input[type="submit"]	{
+	-webkit-appearance: button;
+}
+[type="submit"], [type="reset"]	{
+	cursor: pointer;
+}
+button[disabled], html input[disabled]	{
+	cursor: default;
+}
+button::-moz-focus-inner, input::-moz-focus-inner	{
+	border: 0;
+	padding: 0;
+}
+input[type="checkbox"], input[type="radio"]	{
+	box-sizing: border-box;
+	padding: 0;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button	{
+	height: auto;
+}
+input[type="search"]	{
+	-webkit-appearance: textfield;
+	-moz-box-sizing: content-box;
+	-webkit-box-sizing: content-box;
+	box-sizing: content-box;
+}
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration	{
+	-webkit-appearance: none;
+}
