@@ -21,7 +21,8 @@ body::before	{
 	height: 0;
 	text-indent: -4444px;
 }
-body::after	{
+body::after,
+.clear::after	{
 	clear: both;
 	content: " ";
 	display: block;
