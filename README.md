@@ -1,7 +1,6 @@
-Pour Zengularity
+Homework
 ========
 
 
 
-_Homework_
-Mise en œuvre d'un développement en ReactJS et JavaScript fonctionnel, d'une interface de requêtes vers Github.
+_Prototype test_  : mise en œuvre d'un développement en ReactJS et JavaScript fonctionnel, d'une interface de requêtes vers Github.
