@@ -2,11 +2,12 @@
 PART 1 : ALL REPOS REQUEST */
 
 
+
 var ContentBox = React.createClass({
 
 	getInitialState: function () {
 		"use strict";
-		var path = toGetPath();
+		var path = utilities.toGetPath();
 		return {
 			request: null,
 			total_count: 0,
@@ -19,7 +20,7 @@ var ContentBox = React.createClass({
 	loadReposFromAPI: function (q, val) {
 		"use strict";
 		var request_repo = q.split("/")[0],
-			path = toGetPath();
+			path = utilities.toGetPath();
 		styles.loadingProgress(true);
 		$.ajax({
 			url: api[0] + request_repo + api[1] + token,
@@ -78,7 +79,7 @@ var ReposForm = React.createClass({
 
 	toCrossHistory: function () {
 		"use strict";
-		var path = toGetPath();
+		var path = utilities.toGetPath();
 		this.refs.repo.value = path[0];
 		path[0] != "/"
 		&& this.props.onFormSubmit(path[0], true);
@@ -109,17 +110,6 @@ var ReposList = React.createClass({
 	rawMarkup: function(string) {
 		"use strict";
 		return { __html: marked(string.toString(), {sanitize: true}) };
-	},
-
-	toBiSort: function (n) { //-1 => 0 ; 0 => 0 ; n => 1
-		"use strict";
-		var x = Math.floor((n + 1) * 2 / 3);
-		return Math.ceil(x / (x + 1));
-	},
-
-	toTriSort: function (n) { //-1 => 0 ; 0 => 1 ; n => 2
-		"use strict";
-		return Math.ceil(n / (n + 2)) + 1;
 	},
 
 	Repos: [
@@ -170,8 +160,8 @@ var ReposList = React.createClass({
 	render: function () {
 		"use strict";
 		var len = this.props.len,
-			reposNodes = this.Repos[this.toBiSort(len)].bind(this)(this.props.path_full),
-			result = this.Results[this.toTriSort(len)].bind(this)();
+			reposNodes = this.Repos[utilities.toShuntBi(len)].bind(this)(this.props.path_full),
+			result = this.Results[utilities.toShuntTri(len)].bind(this)();
 		return (
 			<div id="resultsRepos">
 				<div dangerouslySetInnerHTML={this.rawMarkup(result)} />
@@ -276,6 +266,7 @@ ReactDOM.render(
 /* ----------------------------------------------------------------------------------------------------------------------------------
 PART 2 : ONE REPO REQUEST */
 
+
 var RepoInfo = React.createClass({
 
 	getInitialState: function () {
@@ -286,8 +277,7 @@ var RepoInfo = React.createClass({
 
 	toCloseRepoInfo: function (e) {
 		"use strict"
-		var path = toGetPath();
-		console.log(path)
+		var path = utilities.toGetPath();
 		e.preventDefault();
 		ReactDOM.unmountComponentAtNode(document.getElementById("contentRepo"));
 		styles.hidingRepos(false);
@@ -299,7 +289,7 @@ var RepoInfo = React.createClass({
 
 	render: function () {
 		"use strict";
-		var path = toGetPath();
+		var path = utilities.toGetPath();
 		styles.loadingProgress(false).hidingRepos(true);
 		"/" + path[0] + "/" + path[1] != this.state.url
 		&& history.pushState(
@@ -309,7 +299,7 @@ var RepoInfo = React.createClass({
 		return (
 			<div>
 				<a href="#" className="close" onClick={this.toCloseRepoInfo}>
-					Résultats initiaux <span className="closeIcon">&#xF081;</span>
+					<span className="closeIcon">&#xF081;</span> Résultats initiaux <span className="closeIcon">&#xF081;</span>
 				</a>
 				<div className="clear">
 					<hr />
@@ -319,7 +309,9 @@ var RepoInfo = React.createClass({
 				</h2>
 				<div className="clear">
 					<RepoUserInfo gotContrib={this.props.gotContrib} />
-					<RepoCommitInfo gotCommit={this.props.gotCommit} nbContrib={this.props.gotContrib.length} />
+					<RepoCommitInfo gotCommit={this.props.gotCommit} nbContrib={this.props.gotContrib.length} quoi={6} />
+				</div>
+				<div id="timeline">
 				</div>
 			</div>
 );	}	});
@@ -339,7 +331,7 @@ var RepoUserInfo = React.createClass({
 			);	}),
 			users = repoUsers.length == 100 ?
 				"Au moins 100 contributeurs" :
-				repoUsers.length + " contributeurs :";
+				repoUsers.length + " contributeurs :"; //to do: if single contributor
 
 		return (
 			<div className="left">
@@ -366,19 +358,25 @@ var RepoUser = React.createClass({
 
 var RepoCommitInfo = React.createClass({
 
-	render: function() {
+	/* this.setProps({}) in toCalculateCommitters() makes an error */
+	repoCommittersG: null, //to do: how to communicate value inside object without state nor setProps (in ES6 no more valid)?
+
+	toCalculateCommitters: function () {
 		"use strict";
-		var repoCommits = this.props.gotCommit.map(function (user) {
+
+		var users = [],
+			usersSorted = [],
+			number = 0,
+			committers,
+			repoCommitters,
+			repoCommits;
+
+		repoCommits = this.props.gotCommit.map(function (user) {
 			"use strict";
 			return user.author ?
 				user.author.login :
 				user.commit.author.name + " (an.)"; //anonymous
-		}).sort(),
-			users = [],
-			usersSorted = [],
-			number = 0,
-			committers,
-			repoCommitters;
+		}).sort();
 
 		repoCommits.forEach(function (user) {
 			"use strict";
@@ -392,7 +390,9 @@ var RepoCommitInfo = React.createClass({
 				usersSorted[users[k]] = [[k], users[k]];
 		}
 
-		committers = number == this.props.nbContrib ?
+		users = [];
+
+		committers = number == this.props.nbContrib ? //to do: if single contributor, single commit
 			"Sur les " + repoCommits.length + " derniers commits :" :
 			"Dont " + number + " contributeurs sur les " + repoCommits.length + " derniers commits :";
 
@@ -401,19 +401,35 @@ var RepoCommitInfo = React.createClass({
 			user[0].sort(function (a, b) {
 				return a.toLowerCase().localeCompare(b.toLowerCase());
 			});
+			users.push(user);
 			return user[0].map(function (u) {
 				"use strict";
 				return (
 					<RepoCommit user={u} commits={user[1]} />
 		);	});	});
 
+		this.repoCommittersG = users;
+
+		return [committers, repoCommitters];
+	},
+
+	componentDidMount: function() {
+		"use strict";
+		ReactDOM.render(
+			<Timeline gotCommit={this.props.gotCommit} list={this.repoCommittersG} />,
+			document.getElementById("timeline")
+	);	},
+
+	render: function() {
+		"use strict";
+		var commits = this.toCalculateCommitters();
 		return (
 			<div className="right">
 				<h3>
-					{committers}
+					{commits[0]}
 				</h3>
 				<ol className="users">
-					{repoCommitters}
+					{commits[1]}
 				</ol>
 			</div>
 );	}	});
@@ -421,21 +437,230 @@ var RepoCommitInfo = React.createClass({
 
 var RepoCommit = React.createClass({
 
-	toBiSort12N1: function (n) { //1 => 2 ; n => 1
-		"use strict";
-		return Math.floor(n / (n * n)) + 1;
-	},
-
 	render: function () {
 		"use strict";
-		var presentation = [" : ", " commits", " commit"]
+		var presentation = [" : ", " commits", " commit"];
 		return (
 			<li>
 				{this.props.user}
 				{presentation[0]}
 				{this.props.commits}
-				{presentation[this.toBiSort12N1(this.props.commits)]}
+				{presentation[utilities.toShuntBi12N1(this.props.commits)]}
 			</li>
 );	}	});
 
+
+var Timeline = React.createClass({
+
+	toFixContributor: [
+		function () { //less than 5 commits, return "divers"
+			"use strict";
+			return "divers";
+		},
+		function (con) { //more than 4 commits, return contributor name
+			"use strict";
+			return con;
+	}	],
+
+	toDetermineContributors: function () {
+		"use strict";
+		var contributors = [],
+			commitPerContribShortList = [];
+		this.props.list.forEach(function (cont) {
+			"use strict";
+			cont[0].forEach(function (con) {
+				"use strict";
+				contributors[con] = this.toFixContributor[cont[1] < 5 ? 0 : 1].bind(this)(con);
+				typeof commitPerContribShortList[contributors[con]] === "undefined"
+				&& (commitPerContribShortList[contributors[con]] = cont[1])
+				|| (commitPerContribShortList[contributors[con]] += cont[1]);
+			}.bind(this));
+		}.bind(this));
+		return [contributors, commitPerContribShortList];
+	},
+
+	toCalculateDates: function () {
+		"use strict";
+		return this.props.gotCommit.map(function (com) {
+			"use strict";
+			return [new Date(com.commit.author.date), (com.author && com.author.login) || com.commit.author.name + " (an)"];
+		}).sort(function (a, b) {
+			"use strict";
+			return a[0] - b[0];
+	});	},
+
+	render: function () {
+		"use strict";
+		var slice = this.toDetermineContributors(),
+			contributors = slice[0],
+			commitPerContribShortList = slice[1],
+
+			dates = this.toCalculateDates(),
+			dlast = dates.length - 1,
+			start = dates[0][0],
+			startMs = start.getTime(),
+			end = dates[dlast][0],
+			duration = (end - start),
+			slice = duration / 50,
+
+			intoHead = [[start, new Date(startMs + slice), startMs]],
+			timelineHead,
+			intoLine = [0],
+			timelineLine,
+			timelineTotal,
+			intoDetails = [],
+			timelineDetails = [];
+
+
+
+		for (var k in contributors) {
+			! intoDetails[contributors[k]]
+			&& (intoDetails[contributors[k]] = [0]); //short list of contributors
+		}
+
+
+/* table head */
+
+		intoHead[0][3] = intoHead[0][1].getTime();
+		for (var i = 1; i < 50; ++i) {
+			intoHead[i] = [new Date(intoHead[i - 1][2] + slice), new Date(intoHead[i - 1][3] + slice)];
+			intoHead[i][2] = intoHead[i][0].getTime();
+			intoHead[i][3] = intoHead[i][1].getTime();
+			intoLine[i] = 0;
+			for (var k in intoDetails)
+				intoDetails[k][i] = 0;
+		}
+
+		timelineHead = intoHead.map(function (date, index) {
+			"use strict";
+			return <TimelineThead date0={date[0]} date1={date[1]} index={index + 1} />
+		});
+
+
+/* table datas */
+
+		dates.forEach(function (d, index) {
+			"use strict";
+			var item = Math.floor((d[0].getTime() - startMs - /* for last item */ Math.floor(index / dlast)) / slice);
+			intoLine[item] ++;
+
+			typeof contributors[d[1]] !== "undefined"
+			&& intoDetails[contributors[d[1]]][item] ++;
+		});
+
+		timelineLine = intoLine.map(function (val) {
+			"use strict";
+			return <TimelineTbodyLine val={val} />
+		});
+
+		timelineTotal = intoLine.map(function (val) {
+			"use strict";
+			return <TimelineTbodyTotal val={val} />
+		});
+
+
+/* table details */
+
+		for (var k in intoDetails)
+			timelineDetails.push(<TimelineTbodyDetails
+				con={k}
+				commitPerShortL={commitPerContribShortList}
+				details={intoDetails[k]} />);
+
+
+		return (
+			<table>
+				<caption title="Chronologie des derniers commits, à partir des plus anciens en premières colonnes,
+					et avec détail des contributeurs les plus importants à partir de la troisième ligne du tableau">
+					Chronologie des derniers commits<br /> entre le {utilities.toGetFullDate(start)} et le {utilities.toGetFullDate(end)}
+				</caption>
+				<thead>
+					<tr>
+						<td></td>
+						{timelineHead}
+					</tr>
+				</thead>
+				<tbody>
+					<tr className="time">
+						<td></td>
+						{timelineLine}
+					</tr>
+					<tr className="totaux">
+						<th scope="row">Totaux</th>
+						{timelineTotal}
+					</tr>
+					{timelineDetails}
+				</tbody>
+			</table>
+);	}	});
+
+
+
+var TimelineThead = React.createClass({
+
+	render: function () {
+		"use strict";
+		var title = "Du " + utilities.toGetFullDate(this.props.date0) + " au " + utilities.toGetFullDate(this.props.date1),
+			date = this.props.index == 1 || this.props.index % 5 == 0 ? utilities.toGetDate(this.props.date0) : "";
+		return (
+			<th scop="col">
+				<abbr title={title}>
+					{this.props.index}
+				</abbr>
+				<code>
+					{date}
+				</code>
+			</th>
+);	}});
+
+
+var TimelineTbodyLine = React.createClass({
+
+	render: function () {
+		"use strict";
+		var content = this.props.val == 0 ? "" : this.props.val + " commits",
+			h = "h" + this.props.val; /* inline style on <strong makes error on ReactJS JSX */
+		return (
+			<td>
+				<strong className={h} title={content}>{content}</strong>
+			</td>
+);	}	});
+
+
+var TimelineTbodyTotal = React.createClass({
+
+	render: function () {
+		"use strict";
+		var content = this.props.val == 0 ? "" : this.props.val;
+		return (
+			<td>
+				{content}
+			</td>
+);	}	});
+
+
+var TimelineTbodyDetails = React.createClass({
+
+	render: function () {
+		"use strict";
+		var timelineDetailsCell = this.props.details.map(function (val) {
+			"use strict";
+			return <TimelineTbodyDetailsCell val={val} />
+		});
+		return (
+			<tr>
+				<th scope="row">{this.props.con} ({this.props.commitPerShortL[this.props.con]})</th>
+				{timelineDetailsCell}
+			</tr>
+);	}	});
+
+
+var TimelineTbodyDetailsCell = React.createClass({
+
+	render: function () {
+		"use strict";
+		var v = this.props.val > 0 ? this.props.val : "";
+		return (
+			<td>{v}</td>
+);	}	});
 
