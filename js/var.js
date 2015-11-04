@@ -1,3 +1,8 @@
+/* Web appli to search repo with Github API
+Gaëtan Langhade, Interfacteur
+novembre 2015 */
+
+
 var api = [
 	"https://api.github.com/search/repositories?q=",
 	"+in:name&type=Repositories&per_page=50",
@@ -15,3 +20,7 @@ var token = "&client_id=e8ce07d7ca81454ca7ca&client_secret=58e01a1e64bc997753cf3
 var re = {
 	path_full: /^\/[^\/]+\/[^\/]+\/[^\/]+$/
 }
+
+
+var title = document.title.split(":")[0];
+

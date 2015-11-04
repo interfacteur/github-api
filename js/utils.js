@@ -1,3 +1,8 @@
+/* Web appli to search repo with Github API
+Gaëtan Langhade, Interfacteur
+novembre 2015 */
+
+
 var utilities = {
 
 	toShuntBi: function (n) { //-1 => 0 ; 0 => 0 ; n => 1

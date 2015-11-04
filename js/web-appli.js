@@ -1,3 +1,11 @@
+/* Web appli to search repo with Github API
+Gaëtan Langhade, Interfacteur
+novembre 2015 */
+
+
+
+
+
 /* ----------------------------------------------------------------------------------------------------------------------------------
 PART 1 : ALL REPOS REQUEST */
 
@@ -36,6 +44,7 @@ var ContentBox = React.createClass({
 					path_short: path[0],
 					path_full: path[1]
 				});
+				document.title = title + ": /" + request_repo;
 				! val //when navigation via history cf. ReposForm.toCrossHistory
 				&& (location.pathname.substring(1) != request_repo)
 				&& history.pushState({}, request_repo, "/" + request_repo);
@@ -122,7 +131,8 @@ var ReposList = React.createClass({
 			return this.props.items.map(function (repo) {
 				"use strict";
 				var r_api_title = "Dépôt '" + repo.full_name + "' : info sur les contributeurs et les commits",
-					r_github_title = "Voir le dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)";
+					r_github_title = "Voir le dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
+					r_path = document.location.href + "/" + repo.full_name;
 				return (
 					<ReposDetail
 						r_login={repo.owner.login}
@@ -132,7 +142,8 @@ var ReposList = React.createClass({
 						r_api_title={r_api_title}
 						r_github={repo.html_url}
 						r_github_title={r_github_title}
-						path_full={path_full} />
+						path_full={path_full}
+						r_path={r_path} />
 	);	});	}	],
 
 	Results: [
@@ -195,7 +206,7 @@ var ReposDetail = React.createClass({
 					cache: false,
 					success: function (gotCommit) {
 						"use strict";
-						this.toDealResults(gotContrib, gotCommit);
+						this.toDealResultsFromAjax(gotContrib, gotCommit);
 					}.bind(this),
 					error: function (xhr, status, err) {
 						"use strict";
@@ -210,7 +221,7 @@ var ReposDetail = React.createClass({
 			}.bind(this)
 	})	},
 
-	toDealResults: function (gotContrib, gotCommit) {
+	toDealResultsFromAjax: function (gotContrib, gotCommit) {
 		"use strict";
 		ReactDOM.render(
 			<RepoInfo
@@ -244,7 +255,7 @@ var ReposDetail = React.createClass({
 		return (
 			<li className={this.props.dclass}>
 				{this.props.r_login} : <a
-					href="#" title={this.props.r_api_title} data-api={this.props.r_api} onClick={this.handleToGetDetails}>
+					href={this.props.r_path} title={this.props.r_api_title} data-api={this.props.r_api} onClick={this.handleToGetDetails}>
 					{this.props.r_name}
 				</a>
 				<span className="more">
@@ -263,8 +274,11 @@ ReactDOM.render(
 
 
 
+
+
 /* ----------------------------------------------------------------------------------------------------------------------------------
-PART 2 : ONE REPO REQUEST */
+PART 2 : ONE REPO REQUEST except timeline */
+
 
 
 var RepoInfo = React.createClass({
@@ -284,6 +298,7 @@ var RepoInfo = React.createClass({
 		this.setState({
 			url: "/" + path[0]
 		});
+		document.title = title + ": /" + path[0];
 		history.pushState({}, "/" + path[0], "/" + path[0]);
 	},
 
@@ -291,6 +306,7 @@ var RepoInfo = React.createClass({
 		"use strict";
 		var path = utilities.toGetPath();
 		styles.loadingProgress(false).hidingRepos(true);
+		document.title = title + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name;
 		"/" + path[0] + "/" + path[1] != this.state.url
 		&& history.pushState(
 			{},
@@ -308,8 +324,8 @@ var RepoInfo = React.createClass({
 					Info sur le dépôt <strong>{this.props.r_name}</strong> de <strong>{this.props.r_login}</strong>
 				</h2>
 				<div className="clear">
-					<RepoUserInfo gotContrib={this.props.gotContrib} />
-					<RepoCommitInfo gotCommit={this.props.gotCommit} nbContrib={this.props.gotContrib.length} quoi={6} />
+					<RepoUser gotContrib={this.props.gotContrib} />
+					<RepoCommit gotCommit={this.props.gotCommit} nbContrib={this.props.gotContrib.length} quoi={6} />
 				</div>
 				<div id="timeline">
 				</div>
@@ -317,7 +333,7 @@ var RepoInfo = React.createClass({
 );	}	});
 
 
-var RepoUserInfo = React.createClass({
+var RepoUser = React.createClass({ //from contributors JSON
 
 	render: function() {
 		"use strict";
@@ -327,7 +343,7 @@ var RepoUserInfo = React.createClass({
 				user.name + " (anonyme)" : //anonymous
 				user.login;
 			return (
-				<RepoUser login={contributor} />
+				<RepoUserInfo login={contributor} />
 			);	}),
 			users = repoUsers.length == 100 ?
 				"Au moins 100 contributeurs" :
@@ -345,7 +361,7 @@ var RepoUserInfo = React.createClass({
 );	}	});
 
 
-var RepoUser = React.createClass({
+var RepoUserInfo = React.createClass({
 
 	render: function () {
 		"use strict";
@@ -356,7 +372,7 @@ var RepoUser = React.createClass({
 );	}	});
 
 
-var RepoCommitInfo = React.createClass({
+var RepoCommit = React.createClass({ //from commits JSON
 
 	/* this.setProps({}) in toCalculateCommitters() makes an error */
 	repoCommittersG: null, //to do: how to communicate value inside object without state nor setProps (in ES6 no more valid)?
@@ -377,18 +393,29 @@ var RepoCommitInfo = React.createClass({
 				user.author.login :
 				user.commit.author.name + " (an.)"; //anonymous
 		}).sort();
+/* console.log(repoCommits)
+	["LRotherfield", "LRotherfield", "LRotherfield", "Luke Rotherfield (an.)", "Luke Rotherfield (an.)",
+	"Luke Rotherfield (an.)", "root (an.)", "root (an.)", "sebastien-roch", "sgilberg"] */
 
-		repoCommits.forEach(function (user) {
+		repoCommits.forEach(function (user) { //remove duplicates
 			"use strict";
 			users[user] ? ++ users[user] : users[user] = 1;
 		});
+/* console.log(users)
+	LRotherfield 	3
+	Luke Rotherfield (an.)	3
+	root (an.)	2
+	sebastien-roch 	1
+	sgilberg 	1 */
 
 		for (var k in users) {
 			++ number;
-			usersSorted[users[k]] ?
+			typeof usersSorted[users[k]] !== "undefined" ?
 				usersSorted[users[k]][0].push(k) :
 				usersSorted[users[k]] = [[k], users[k]];
 		}
+/* console.log(usersSorted)
+	[undefined, [["sebastien-roch", "sgilberg"], 1], [["root (an.)"], 2], [["LRotherfield", "Luke Rotherfield (an.)"], 3]] */
 
 		users = [];
 
@@ -398,6 +425,8 @@ var RepoCommitInfo = React.createClass({
 
 		repoCommitters = usersSorted.reverse().map(function (user) {
 			"use strict";
+			/* console.log(user)
+				[["LRotherfield", "Luke Rotherfield (an.)"], 3] */
 			user[0].sort(function (a, b) {
 				return a.toLowerCase().localeCompare(b.toLowerCase());
 			});
@@ -405,12 +434,14 @@ var RepoCommitInfo = React.createClass({
 			return user[0].map(function (u) {
 				"use strict";
 				return (
-					<RepoCommit user={u} commits={user[1]} />
+					<RepoCommitInfo user={u} commits={user[1]} />
 		);	});	});
+/* console.log(users)
+	[[["LRotherfield", "Luke Rotherfield (an.)"], 3], [["root (an.)"], 2], [["sebastien-roch", "sgilberg"], 1]] */
 
-		this.repoCommittersG = users;
+		this.repoCommittersG = users; //for timeline
 
-		return [committers, repoCommitters];
+		return [committers, repoCommitters]; //for render function
 	},
 
 	componentDidMount: function() {
@@ -435,7 +466,7 @@ var RepoCommitInfo = React.createClass({
 );	}	});
 
 
-var RepoCommit = React.createClass({
+var RepoCommitInfo = React.createClass({
 
 	render: function () {
 		"use strict";
@@ -448,6 +479,14 @@ var RepoCommit = React.createClass({
 				{presentation[utilities.toShuntBi12N1(this.props.commits)]}
 			</li>
 );	}	});
+
+
+
+
+
+/* ----------------------------------------------------------------------------------------------------------------------------------
+PART 3 : ONE REPO REQUEST TIMELINE */
+
 
 
 var Timeline = React.createClass({
@@ -463,6 +502,14 @@ var Timeline = React.createClass({
 	}	],
 
 	toDetermineContributors: function () {
+/*
+- to create object
+with login as key and login as value if at less 5 commits
+or login as key and "divers" as value if less than 5 commits
+- to create object
+to associate all possible values of previous object, with its number of commits
+
+cf. console.log in render function */
 		"use strict";
 		var contributors = [],
 			commitPerContribShortList = [];
@@ -483,7 +530,7 @@ var Timeline = React.createClass({
 		"use strict";
 		return this.props.gotCommit.map(function (com) {
 			"use strict";
-			return [new Date(com.commit.author.date), (com.author && com.author.login) || com.commit.author.name + " (an)"];
+			return [new Date(com.commit.author.date), (com.author && com.author.login) || com.commit.author.name + " (an.)"];
 		}).sort(function (a, b) {
 			"use strict";
 			return a[0] - b[0];
@@ -494,6 +541,14 @@ var Timeline = React.createClass({
 		var slice = this.toDetermineContributors(),
 			contributors = slice[0],
 			commitPerContribShortList = slice[1],
+/* console.log(contributors)
+	LRotherfield	"divers"
+	Luke Rotherfield (an.)	"divers"
+	root (an.)	"divers"
+	sebastien-roch	"divers"
+	sgilberg	"divers" */
+/* console.log(commitPerContribShortList)
+	divers	10 */
 
 			dates = this.toCalculateDates(),
 			dlast = dates.length - 1,
@@ -502,64 +557,95 @@ var Timeline = React.createClass({
 			end = dates[dlast][0],
 			duration = (end - start),
 			slice = duration / 50,
+/* console.log(dates)
+	[
+		[Date {Thu Aug 01 2013 22:13:36 GMT+0200 (CEST)}, "root (an.)"],
+		[Date {Thu Aug 01 2013 22:17:57 GMT+0200 (CEST)}, "root (an.)"],
+		[Date {Thu Aug 01 2013 22:21:07 GMT+0200 (CEST)}, "Luke Rotherfield (an.)"],
+		[Date {Thu Aug 01 2013 22:37:53 GMT+0200 (CEST)}, "Luke Rotherfield (an.)"],
+		[Date {Thu Aug 01 2013 22:38:57 GMT+0200 (CEST)}, "Luke Rotherfield (an.)"],
+		[Date {Fri Aug 30 2013 22:20:22 GMT+0200 (CEST)}, "LRotherfield"],
+		[Date {Tue Sep 03 2013 09:27:53 GMT+0200 (CEST)}, "sebastien-roch"],
+		[Date {Tue Sep 03 2013 12:54:20 GMT+0200 (CEST)}, "LRotherfield"],
+		[Date {Thu Jun 18 2015 16:44:40 GMT+0200 (CEST)}, "sgilberg"],
+		[Date {Fri Jun 19 2015 10:08:48 GMT+0200 (CEST)}, "LRotherfield"]
+	] */
 
+//table head
 			intoHead = [[start, new Date(startMs + slice), startMs]],
+//table head: to render header of table
 			timelineHead,
+
+//table "line"
 			intoLine = [0],
+//table "line": GRAPHICAL RENDERING date by date
 			timelineLine,
+//table "line" total: NUMERIC RENDERING date by date
 			timelineTotal,
+
+//table details: commits date by date for each contributor (short list)
 			intoDetails = [],
+//table details: to render footer like of table
 			timelineDetails = [];
 
 
 
 		for (var k in contributors) {
-			! intoDetails[contributors[k]]
-			&& (intoDetails[contributors[k]] = [0]); //short list of contributors
+			typeof intoDetails[contributors[k]] === "undefined"
+			&& (intoDetails[contributors[k]] = [0]); //to begin to initialise: each item is an array
 		}
 
 
-/* table head */
 
-		intoHead[0][3] = intoHead[0][1].getTime();
-		for (var i = 1; i < 50; ++i) {
+
+/* TABLE HEAD */
+
+		intoHead[0][3] = intoHead[0][1].getTime(); //initialisations
+		for (var i = 1; i < 50; ++i) { //initialisations
 			intoHead[i] = [new Date(intoHead[i - 1][2] + slice), new Date(intoHead[i - 1][3] + slice)];
 			intoHead[i][2] = intoHead[i][0].getTime();
 			intoHead[i][3] = intoHead[i][1].getTime();
-			intoLine[i] = 0;
-			for (var k in intoDetails)
+			intoLine[i] = 0; //to finish to initialise for 50 numerical entries
+			for (var k in intoDetails) //to finish to initialise: each item is an array of 50 numerical entries
 				intoDetails[k][i] = 0;
 		}
 
-		timelineHead = intoHead.map(function (date, index) {
+		timelineHead = intoHead.map(function (date, index) { //render head
 			"use strict";
 			return <TimelineThead date0={date[0]} date1={date[1]} index={index + 1} />
 		});
 
 
-/* table datas */
 
-		dates.forEach(function (d, index) {
+
+/* TABLE "LINE" */
+
+		dates.forEach(function (d, index) { //commits count
+/*
+to count commits by date
+and to count commits for each contributor (short liste) by date
+*/
 			"use strict";
 			var item = Math.floor((d[0].getTime() - startMs - /* for last item */ Math.floor(index / dlast)) / slice);
-			intoLine[item] ++;
-
+			intoLine[item] ++; //to count commits
 			typeof contributors[d[1]] !== "undefined"
-			&& intoDetails[contributors[d[1]]][item] ++;
+			&& intoDetails[contributors[d[1]]][item] ++; //to count commits / contr.
 		});
 
-		timelineLine = intoLine.map(function (val) {
+		timelineLine = intoLine.map(function (val) { //visual rendering
 			"use strict";
 			return <TimelineTbodyLine val={val} />
 		});
 
-		timelineTotal = intoLine.map(function (val) {
+		timelineTotal = intoLine.map(function (val) { //numerical rendering
 			"use strict";
 			return <TimelineTbodyTotal val={val} />
 		});
 
 
-/* table details */
+
+
+/* TABLE DETAILS */
 
 		for (var k in intoDetails)
 			timelineDetails.push(<TimelineTbodyDetails
@@ -567,6 +653,9 @@ var Timeline = React.createClass({
 				commitPerShortL={commitPerContribShortList}
 				details={intoDetails[k]} />);
 
+
+
+/* GLOBAL TABLE RENDER */
 
 		return (
 			<table>

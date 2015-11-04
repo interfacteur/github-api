@@ -1,4 +1,13 @@
-strong.h1	{ /* inline style on <strong makes error on ReactJS JSX */
+/* Web appli to search repo with Github API
+Gaëtan Langhade, Interfacteur
+novembre 2015 */
+
+
+/* inline style on <strong makes error on ReactJS JSX
+to fix?
+*/
+
+strong.h1	{
 	height: 1em;
 	position: relative;
 	top: .1em;
