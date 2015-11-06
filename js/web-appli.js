@@ -5,6 +5,7 @@ novembre 2015 */
 
 (function () {
 	"use strict";
+	var hstate = null;
 
 
 
@@ -46,9 +47,10 @@ PART 1 : ALL REPOS REQUEST */
 						path_full: path[1]
 					});
 					document.title = title + ": /" + request_repo;
-					! val //when navigation via history cf. ReposForm.toCrossHistory
+					! val //no pushState when navigation via history cf. ReposForm.toCrossHistory
 					&& (location.pathname.substring(1) != request_repo)
-					&& history.pushState({}, request_repo, "/" + request_repo);
+					&& (hstate = history.state === null ? 1 : history.state.step + 1)
+					&& history.pushState({ step: hstate }, request_repo, "/" + request_repo);
 				}
 				.bind(this),
 				error: function (xhr, status, err) {
@@ -56,7 +58,9 @@ PART 1 : ALL REPOS REQUEST */
 					styles.loadingProgress(false);
 				}
 				.bind(this)
-		});	},
+			});
+			return true;
+		},
 
 		render: function () {
 			ReactDOM.unmountComponentAtNode(document.getElementById("contentRepo"));
@@ -89,8 +93,14 @@ PART 1 : ALL REPOS REQUEST */
 		toCrossHistory: function () {
 			var path = utilities.toGetPath();
 			this.refs.repo.value = path[0];
-			path[0] != "/"
-			&& this.props.onFormSubmit(path[0], true);
+			path[0] !== null
+			&&	(	(	hstate > history.state.step
+						&& $(".close").length > 0
+						&& (function () { $(".close").get(0).click(); return true })()
+					)
+					|| this.props.onFormSubmit(path[0], true)
+					&& (hstate = history.state.step)
+				)
 		},
 
 		componentDidMount: function () {
@@ -197,8 +207,14 @@ PART 1 : ALL REPOS REQUEST */
 					dataType: "json",
 					cache: false,
 					success: function (gotCommit) {
-						this.toDealResultsFromAjax(gotContrib, gotCommit);
-					}
+						ReactDOM.render(
+							<RepoInfo
+								r_name={this.props.r_name}
+								r_login={this.props.r_login}
+								gotContrib={gotContrib}
+								gotCommit={gotCommit} />,
+							document.getElementById("contentRepo")
+					);	}
 					.bind(this),
 					error: function (xhr, status, err) {
 						console.error(api[4] + request_repo + api[5], status, err.toString());
@@ -208,16 +224,6 @@ PART 1 : ALL REPOS REQUEST */
 				})
 			}.bind(this))
 		},
-
-		toDealResultsFromAjax: function (gotContrib, gotCommit) {
-			ReactDOM.render(
-				<RepoInfo
-					r_name={this.props.r_name}
-					r_login={this.props.r_login}
-					gotContrib={gotContrib}
-					gotCommit={gotCommit} />,
-				document.getElementById("contentRepo")
-		);	},
 
 		toFollowDeeper: function () {
 			this.props.r_api
@@ -276,7 +282,6 @@ PART 1 : ALL REPOS REQUEST */
 		};	},
 
 		toCloseRepoInfo: function (e) {
-			"use strict"
 			var path = utilities.toGetPath();
 			e.preventDefault();
 			ReactDOM.unmountComponentAtNode(document.getElementById("contentRepo"));
@@ -285,7 +290,10 @@ PART 1 : ALL REPOS REQUEST */
 				url: "/" + path[0]
 			});
 			document.title = title + ": /" + path[0];
-			history.pushState({}, "/" + path[0], "/" + path[0]);
+			if (hstate != null && hstate > history.state.step) //cf. toCrossHistory
+				return hstate = history.state.step;
+			hstate = history.state === null ? 1 : history.state.step + 1;
+			history.pushState({ step: hstate }, "/" + path[0], "/" + path[0]);
 		},
 
 		render: function () {
@@ -293,8 +301,9 @@ PART 1 : ALL REPOS REQUEST */
 			styles.loadingProgress(false).hidingRepos(true);
 			document.title = title + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name;
 			"/" + path[0] + "/" + path[1] != this.state.url
+			&& (hstate = history.state === null ? 1 : history.state.step + 1)
 			&& history.pushState(
-				{},
+				{ step: hstate },
 				this.props.r_name + " de " + this.props.r_login,
 				this.state.url + "/" + this.props.r_login + "/" + this.props.r_name);
 			return (
