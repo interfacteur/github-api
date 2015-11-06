@@ -48,12 +48,14 @@ var ContentBox = React.createClass({
 				! val //when navigation via history cf. ReposForm.toCrossHistory
 				&& (location.pathname.substring(1) != request_repo)
 				&& history.pushState({}, request_repo, "/" + request_repo);
-			}.bind(this),
+			}
+			.bind(this),
 			error: function (xhr, status, err) {
 				"use strict";
 				console.error(api[0] + request_repo + api[1], status, err.toString());
 				styles.loadingProgress(false);
-			}.bind(this)
+			}
+			.bind(this)
 	});	},
 
 	render: function () {
@@ -185,33 +187,40 @@ var ReposDetail = React.createClass({
 
 	toGetDetails: function () {
 		"use strict";
+		var prom = $.when(1); // empty promise
 		styles.loadingProgress(true);
-		$.ajax({
-			url: api[2] + this.props.r_login + "/" + this.props.r_name + api[3] + token,
-			dataType: "json",
-			cache: false,
-			success: function (gotContrib) {
-				"use strict";
-				$.ajax({
-					url: api[4] + this.props.r_login + "/" + this.props.r_name + api[5] + token,
-					dataType: "json",
-					cache: false,
-					success: function (gotCommit) {
-						"use strict";
-						this.toDealResultsFromAjax(gotContrib, gotCommit);
-					}.bind(this),
-					error: function (xhr, status, err) {
-						"use strict";
-						console.error(api[4] + request_repo + api[5], status, err.toString());
-						styles.loadingProgress(false);
-					}.bind(this)
-			})	}.bind(this),
-			error: function (xhr, status, err) {
-				"use strict";
-				console.error(api[2] + request_repo + api[3], status, err.toString());
-				styles.loadingProgress(false);
-			}.bind(this)
-	})	},
+		prom = prom.then(function () {
+			return $.ajax({
+				url: api[2] + this.props.r_login + "/" + this.props.r_name + api[3] + token,
+				dataType: "json",
+				cache: false,
+				error: function (xhr, status, err) {
+					"use strict";
+					console.error(api[2] + request_repo + api[3], status, err.toString());
+					styles.loadingProgress(false);
+				}
+				.bind(this)
+			})
+		}.bind(this))
+		.then(function (gotContrib) {
+			return $.ajax({
+				url: api[4] + this.props.r_login + "/" + this.props.r_name + api[5] + token,
+				dataType: "json",
+				cache: false,
+				success: function (gotCommit) {
+					"use strict";
+					this.toDealResultsFromAjax(gotContrib, gotCommit);
+				}
+				.bind(this),
+				error: function (xhr, status, err) {
+					"use strict";
+					console.error(api[4] + request_repo + api[5], status, err.toString());
+					styles.loadingProgress(false);
+				}
+				.bind(this)
+			})
+		}.bind(this))
+	},
 
 	toDealResultsFromAjax: function (gotContrib, gotCommit) {
 		"use strict";
@@ -505,8 +514,10 @@ cf. console.log in render function */
 				typeof commitPerContribShortList[contributors[con]] === "undefined"
 				&& (commitPerContribShortList[contributors[con]] = cont[1])
 				|| (commitPerContribShortList[contributors[con]] += cont[1]);
-			}.bind(this));
-		}.bind(this));
+			}
+			.bind(this));
+		}
+		.bind(this));
 		return [contributors, commitPerContribShortList];
 	},
 
