@@ -9,7 +9,9 @@ var api = [
 	"https://api.github.com/repos/",
 	"/contributors?per_page=100000&anon=1",
 	"https://api.github.com/repos/",
-	"/commits?per_page=100"
+	"/commits?per_page=100",
+	"+in:name+user:",
+	"&type=Repositories&per_page=50"
 ];
 
 /* to do: protéger (permet de multiples requêtes rapprochées sans erreur) */

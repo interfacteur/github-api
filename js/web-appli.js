@@ -5,7 +5,8 @@ novembre 2015 */
 
 (function () {
 	"use strict";
-	var hstate = -1;
+	var hstate = -1,
+		$user;
 
 
 
@@ -23,10 +24,12 @@ PART 1 : ALL REPOS REQUEST */
 			return {
 				init: false,
 				request: null,
+				user: null,
 				total_count: 0,
 				items: [],
 				path_short: path[0],
-				path_full: path[1]
+				path_full: path[1],
+				path_user: path[2]
 		};	},
 
 		loadReposFromAPI: function (q, val) {
@@ -36,36 +39,41 @@ PART 1 : ALL REPOS REQUEST */
 				val === false via first loaded submission (ReposForm.componentDidMount, with final impact on toFollowDeeper)
 			*/
 			var request_repo = q.split("/")[0],
-				path = utilities.toGetPath();
+				user = $user.val().trim(),
+				huser = user.length == 0 ? "" : ":" + user,
+				path = utilities.toGetPath(),
+				url = huser.length == 0 ?
+					api[0] + request_repo + api[1] + token :
+					api[0] + request_repo + api[6] + user + api[7] + token;
 			val === true
 			&& (path[1] = null); //when identic initial search form detailled result, it display again detailled result
 			styles.loadingProgress(true);
 			$.ajax({
-				url: api[0] + request_repo + api[1] + token,
+				url: url,
 				dataType: "json",
 				cache: false,
 				success: function (got) {
 					this.setState({
 						init: true,
 						request: request_repo,
+						user: huser,
 						total_count: got.total_count,
 						items: got.items,
 						path_short: path[0],
-						path_full: path[1]
+						path_full: path[1],
+						path_user: path[2]
 					});
 					document.title = title + ": /" + request_repo;
 					val === true //no pushState when navigation via history cf. ReposForm.toCrossHistory
-					&& (location.pathname.substring(1) != request_repo)
+					&& (location.pathname.substring(1) != request_repo + huser)
 					&& (hstate = history.state === null ? 1 : history.state.step + 1)
-					&& history.pushState({ step: hstate }, request_repo, "/" + request_repo);
+					&& history.pushState({ step: hstate }, request_repo + huser, "/" + request_repo + huser);
 				}
 				.bind(this),
 				error: function (xhr, status, err) {
 					console.error(api[0] + request_repo + api[1], status, err.toString());
-					styles.loadingProgress(false);
-				}
-				.bind(this)
-			});
+					this.success({ total_count: 0, items: []});
+			}	});
 			return true;
 		},
 
@@ -76,10 +84,12 @@ PART 1 : ALL REPOS REQUEST */
 				<div>
 					<ReposForm
 						onFormSubmit={this.loadReposFromAPI}
-						path_short={this.state.path_short} />
+						path_short={this.state.path_short}
+						path_user={this.state.path_user} />
 					<ReposList
 						init={this.state.init}
 						request={this.state.request}
+						user={this.state.user}
 						total_count={this.state.total_count}
 						items={this.state.items}
 						path_full={this.state.path_full} />
@@ -91,17 +101,16 @@ PART 1 : ALL REPOS REQUEST */
 
 		handleSubmit: function (e) {
 			e.preventDefault();
-			var repo = this.refs.repo.value.trim().split("/")[0],
-				user = this.refs.user.value.trim();
-			this.refs.user.value = user;
+			var repo = this.refs.repo.value.trim().split("/")[0];
 			!! repo
 			&& (this.refs.repo.value = repo)
-			&& this.props.onFormSubmit(repo, true, user);
+			&& this.props.onFormSubmit(repo, true);
 		},
 
 		toCrossHistory: function () {
 			var path = utilities.toGetPath();
 			this.refs.repo.value = path[0];
+			$user.val(path[2].substring(1));
 			path[0] !== null
 			&&	(	(	(history.state === null || hstate > history.state.step) //when history back from detailled result, return to initial result by css effect (toCloseRepoInfo)
 						&& $(".close").length > 0
@@ -114,10 +123,16 @@ PART 1 : ALL REPOS REQUEST */
 
 		componentDidMount: function () {
 			// if (this.isMounted)
+			$user = $("#user");
 			window.onpopstate = this.toCrossHistory; //to do: this event detection here?
 			this.refs.repo.focus();
 			this.props.path_short !== null
-			&& (this.refs.repo.value = this.props.path_short)
+			&&	(	(this.refs.repo.value = this.props.path_short)
+					&&	(	this.props.path_user !== null
+							&& $user.val(this.props.path_user.substring(1))
+						)
+					|| true
+				)
 			&& this.props.onFormSubmit(this.props.path_short, false);
 		},
 
@@ -126,7 +141,7 @@ PART 1 : ALL REPOS REQUEST */
 				<form onSubmit={this.handleSubmit} action="#" method="get">
 					<input type="search" ref="repo" />
 					<input type="submit" value="Chercher" />
-					<input type="search" ref="user" placeholder="(utilisateur en option)" />
+					<input type="search" id="user" placeholder="(utilisateur en option)" />
 				</form>
 	);	}   });
 
@@ -140,6 +155,7 @@ PART 1 : ALL REPOS REQUEST */
 		render: function () {
 			var len = this.props.items.length,
 				request = this.props.request,
+				user = this.props.user,
 				path_full = this.props.path_full,
 
 				reposNodes = len <= 0 ?
@@ -149,7 +165,7 @@ PART 1 : ALL REPOS REQUEST */
 					this.props.items.map(function (repo) {
 						var r_api_title = "Dépôt '" + repo.full_name + "' : info sur les contributeurs et les commits",
 							r_github_title = "Voir le dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
-							r_path = document.location.protocol + "//" + document.location.host + "/" + request + "/" + repo.full_name;
+							r_path = document.location.protocol + "//" + document.location.host + "/" + request + user + "/" + repo.full_name;
 						return (
 							<ReposDetail
 								r_login={repo.owner.login}
@@ -167,13 +183,13 @@ PART 1 : ALL REPOS REQUEST */
 
 					"" :
 
-					(len == 1 ? "Il n'y a aucun résultat pour __" + this.props.request + "__" :
+					(len == 0 ? "Il n'y a aucun résultat dont le nom contienne le terme __" + this.props.request + "__" :
 						len == this.props.total_count ?
 							"*"
 							+ len
-							+ "* dépôts dont le nom contient le terme __"
+							+ "* dépôt" + (len > 1 ? "s " : " ") + "dont le nom contient le terme __"
 							+ this.props.request
-							+ "__ :"
+							+ "__"
 							:
 							"*"
 							+ len
@@ -181,8 +197,10 @@ PART 1 : ALL REPOS REQUEST */
 							+ this.props.total_count
 							+ "* dont le nom contient le terme __"
 							+ this.props.request
-							+ "__ :"
-					);
+							+ "__"
+					)
+					+ ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__": "")
+					+ (len == 0 ? "" : " :");
 
 			return (
 				<div id="resultsRepos"  className="content">
@@ -214,9 +232,7 @@ PART 1 : ALL REPOS REQUEST */
 					error: function (xhr, status, err) {
 						console.error(api[2] + request_repo + api[3], status, err.toString());
 						styles.loadingProgress(false);
-					}
-					.bind(this)
-				})
+				}	})
 			}.bind(this))
 			.then(function (gotContrib) {
 				return $.ajax({
@@ -236,9 +252,7 @@ PART 1 : ALL REPOS REQUEST */
 					error: function (xhr, status, err) {
 						console.error(api[4] + request_repo + api[5], status, err.toString());
 						styles.loadingProgress(false);
-					}
-					.bind(this)
-				})
+				}	})
 			}.bind(this))
 		},
 
@@ -318,7 +332,7 @@ PART 1 : ALL REPOS REQUEST */
 			)	)	)
 			||
 			(	(hstate = history.state === null ? 1 : history.state.step + 1)
-				&& history.pushState({ step: hstate }, "/" + path[0], "/" + path[0])
+				&& history.pushState({ step: hstate }, "/" + path[0], "/" + path[0] + path[2])
 			)
 		},
 
@@ -326,7 +340,7 @@ PART 1 : ALL REPOS REQUEST */
 			var path = utilities.toGetPath();
 			styles.loadingProgress(false).hidingRepos(true);
 			document.title = title + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name;
-			"/" + path[0] + "/" + path[1] != this.state.url
+			"/" + path[0] + path[2] + "/" + path[1] != this.state.url
 			&& (hstate = history.state === null ? 1 : history.state.step + 1)
 			&& history.pushState(
 				{ step: hstate },

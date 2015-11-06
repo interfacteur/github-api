@@ -11,11 +11,14 @@ var utilities = {
 		"use strict";
 		var path0 = decodeURIComponent(location.pathname),
 			path1 = path0.substring(1),
-			path_short = path1.length > 0 ? path1.split("/")[0] : null,
-			path_full = (path_short && re.path_full.test(path0)) ?
-				path1.substring(path_short.length + 1) :
+			path_short1 = path1.length > 0 ? path1.split("/")[0] : false,
+			path_short2 = path_short1 ? path_short1.split(":")[0] : null,
+			path_user1 = path_short1 ? path_short1.split(":") : false,
+			path_user2 = (path_user1 && path_user1.length > 1) ? ":" + path_user1[1] : "",
+			path_full = (path_short2 && re.path_full.test(path0)) ?
+				path1.substring(path_short1.length + 1) :
 				null;
-		return [path_short, path_full];
+		return [path_short2, path_full, path_user2];
 	},
 
 	toFormatDecimal: function (n) {
