@@ -121,58 +121,48 @@ var ReposList = React.createClass({
 		return { __html: marked(string.toString(), {sanitize: true}) };
 	},
 
-	Repos: [
-		function (path_full) {
-			"use strict";
-			return <ReposDetail dname="" dclass="off" dapi="#" dgithub="#" path_full={path_full} />;
-		},
-		function (path_full) {
-			"use strict";
-			return this.props.items.map(function (repo) {
-				"use strict";
-				var r_api_title = "Dépôt '" + repo.full_name + "' : info sur les contributeurs et les commits",
-					r_github_title = "Voir le dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
-					r_path = document.location.href + "/" + repo.full_name;
-				return (
-					<ReposDetail
-						r_login={repo.owner.login}
-						r_name={repo.name}
-						r_class="on"
-						r_api={repo.url}
-						r_api_title={r_api_title}
-						r_github={repo.html_url}
-						r_github_title={r_github_title}
-						path_full={path_full}
-						r_path={r_path} />
-	);	});	}	],
-
-	Results: [
-		function () {
-			"use strict";
-			return "";
-		},
-		function () {
-			"use strict";
-			return "Il n'y a aucun résultat pour __"
-				+ this.props.request
-				+ "__";
-		},
-		function () {
-			"use strict";
-			return "*"
-				+ this.props.len
-				+ "* dépôts sur *"
-				+ this.props.total_count
-				+ "* dont le nom contient le terme __"
-				+ this.props.request
-				+ "__ :";
-	}	],
-
 	render: function () {
 		"use strict";
 		var len = this.props.len,
-			reposNodes = this.Repos[utilities.toShuntBi(len)].bind(this)(this.props.path_full),
-			result = this.Results[utilities.toShuntTri(len)].bind(this)();
+			request = this.props.request,
+			path_full = this.props.path_full,
+
+			reposNodes = len <= 0 ?
+
+				<ReposDetail dname="" dclass="off" dapi="#" dgithub="#" path_full={path_full} /> :
+
+				this.props.items.map(function (repo) {
+					"use strict";
+					var r_api_title = "Dépôt '" + repo.full_name + "' : info sur les contributeurs et les commits",
+						r_github_title = "Voir le dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
+						r_path = document.location.protocol + "//" + document.location.host + "/" + request + "/" + repo.full_name;
+					return (
+						<ReposDetail
+							r_login={repo.owner.login}
+							r_name={repo.name}
+							r_class="on"
+							r_api={repo.url}
+							r_api_title={r_api_title}
+							r_github={repo.html_url}
+							r_github_title={r_github_title}
+							path_full={path_full}
+							r_path={r_path} />
+				);	}),
+
+			result = len == -1 ?
+
+				"" :
+
+				(len == 1 ? "Il n'y a aucun résultat pour __" + this.props.request + "__" :
+					"*"
+					+ this.props.len
+					+ "* dépôts sur *"
+					+ this.props.total_count
+					+ "* dont le nom contient le terme __"
+					+ this.props.request
+					+ "__ :"
+				);
+
 		return (
 			<div id="resultsRepos">
 				<div dangerouslySetInnerHTML={this.rawMarkup(result)} />
@@ -187,6 +177,8 @@ var ReposDetail = React.createClass({
 
 	handleToGetDetails: function (e) {
 		"use strict";
+		if (utilities.newnav)
+			return;
 		e.preventDefault();
 		this.toGetDetails();
 	},
@@ -255,7 +247,11 @@ var ReposDetail = React.createClass({
 		return (
 			<li className={this.props.dclass}>
 				{this.props.r_login} : <a
-					href={this.props.r_path} title={this.props.r_api_title} data-api={this.props.r_api} onClick={this.handleToGetDetails}>
+					href={this.props.r_path}
+					title={this.props.r_api_title}
+					data-api={this.props.r_api}
+					onClick={this.handleToGetDetails}
+					target="_blank">
 					{this.props.r_name}
 				</a>
 				<span className="more">
@@ -470,13 +466,11 @@ var RepoCommitInfo = React.createClass({
 
 	render: function () {
 		"use strict";
-		var presentation = [" : ", " commits", " commit"];
+		var presentation = this.props.commits == 1 ? " commits" : " commit";
 		return (
 			<li>
-				{this.props.user}
-				{presentation[0]}
-				{this.props.commits}
-				{presentation[utilities.toShuntBi12N1(this.props.commits)]}
+				{this.props.user} : {this.props.commits}
+				{presentation}
 			</li>
 );	}	});
 
@@ -490,16 +484,6 @@ PART 3 : ONE REPO REQUEST TIMELINE */
 
 
 var Timeline = React.createClass({
-
-	toFixContributor: [
-		function () { //less than 5 commits, return "divers"
-			"use strict";
-			return "divers";
-		},
-		function (con) { //more than 4 commits, return contributor name
-			"use strict";
-			return con;
-	}	],
 
 	toDetermineContributors: function () {
 /*
@@ -517,7 +501,7 @@ cf. console.log in render function */
 			"use strict";
 			cont[0].forEach(function (con) {
 				"use strict";
-				contributors[con] = this.toFixContributor[cont[1] < 5 ? 0 : 1].bind(this)(con);
+				contributors[con] = cont[1] < 5 ? "= divers" : con; //less than 5 commits, return "divers" else return contributor name
 				typeof commitPerContribShortList[contributors[con]] === "undefined"
 				&& (commitPerContribShortList[contributors[con]] = cont[1])
 				|| (commitPerContribShortList[contributors[con]] += cont[1]);

@@ -5,21 +5,7 @@ novembre 2015 */
 
 var utilities = {
 
-	toShuntBi: function (n) { //-1 => 0 ; 0 => 0 ; n => 1
-		"use strict";
-		var x = Math.floor((n + 1) * 2 / 3);
-		return Math.ceil(x / (x + 1));
-	},
-
-	toShuntTri: function (n) { //-1 => 0 ; 0 => 1 ; n => 2
-		"use strict";
-		return Math.ceil(n / (n + 2)) + 1;
-	},
-
-	toShuntBi12N1: function (n) { //1 => 2 ; n => 1
-		"use strict";
-		return Math.floor(n / (n * n)) + 1;
-	},
+	newnav: false,
 
 	toGetPath: function () {
 		"use strict";
@@ -32,19 +18,30 @@ var utilities = {
 		return [path_short, path_full];
 	},
 
+	toFormatDecimal: function (n) {
+		"use strict";
+		return n < 10 ? "0" + n : n;
+	},
+
 	toGetDate: function (date) {
 		"use strict";
-		var d = date.getDate(),
-			dF = d < 10 ? "0" + d : d,
-			m = date.getMonth() + 1,
-			mF = m < 10 ? "0" + m : m;
-		return dF + "/" + mF + "/" + date.getFullYear();
+		return utilities.toFormatDecimal(date.getDate()) + "/" + utilities.toFormatDecimal(date.getMonth()) + "/" + date.getFullYear();
 	},
 
 	toGetFullDate: function (date) {
 		"use strict";
-		return utilities.toGetDate(date) + " (" + date.getHours() + "h" + date.getMinutes() + ")";
+		return utilities.toGetDate(date) + " (" + date.getHours() + "h" + utilities.toFormatDecimal(date.getMinutes()) + ")";
 }	};
+
+
+$(window).on("keydown", function (e) {
+	"use strict";
+	var key = e.which;
+	utilities.newnav = key == 16 || key == 17 || key == 224 ? true : false;
+}).on("keyup", function (e) {
+	"use strict";
+	utilities.newnav = false;
+});
 
 
 var styles = {
