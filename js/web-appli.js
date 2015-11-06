@@ -5,7 +5,7 @@ novembre 2015 */
 
 (function () {
 	"use strict";
-	var hstate = null;
+	var hstate = -1;
 
 
 
@@ -30,8 +30,15 @@ PART 1 : ALL REPOS REQUEST */
 		};	},
 
 		loadReposFromAPI: function (q, val) {
+			/*	q : string
+				val === true via handle submission (ReposForm.handleSubmit)
+				val === false via history (ReposForm.toCrossHistory)
+				val === false via first loaded submission (ReposForm.componentDidMount, with final impact on toFollowDeeper)
+			*/
 			var request_repo = q.split("/")[0],
 				path = utilities.toGetPath();
+			val === true
+			&& (path[1] = null); //when identic initial search form detailled result, it display again detailled result
 			styles.loadingProgress(true);
 			$.ajax({
 				url: api[0] + request_repo + api[1] + token,
@@ -47,7 +54,7 @@ PART 1 : ALL REPOS REQUEST */
 						path_full: path[1]
 					});
 					document.title = title + ": /" + request_repo;
-					! val //no pushState when navigation via history cf. ReposForm.toCrossHistory
+					val === true //no pushState when navigation via history cf. ReposForm.toCrossHistory
 					&& (location.pathname.substring(1) != request_repo)
 					&& (hstate = history.state === null ? 1 : history.state.step + 1)
 					&& history.pushState({ step: hstate }, request_repo, "/" + request_repo);
@@ -87,29 +94,29 @@ PART 1 : ALL REPOS REQUEST */
 			var repo = this.refs.repo.value.trim().split("/")[0];
 			!! repo
 			&& (this.refs.repo.value = repo)
-			&& this.props.onFormSubmit(repo);
+			&& this.props.onFormSubmit(repo, true);
 		},
 
 		toCrossHistory: function () {
 			var path = utilities.toGetPath();
 			this.refs.repo.value = path[0];
 			path[0] !== null
-			&&	(	(	hstate > history.state.step
+			&&	(	(	(history.state === null || hstate > history.state.step) //when history back from detailled result, return to initial result by css effect (toCloseRepoInfo)
 						&& $(".close").length > 0
 						&& (function () { $(".close").get(0).click(); return true })()
 					)
-					|| this.props.onFormSubmit(path[0], true)
-					&& (hstate = history.state.step)
+					|| this.props.onFormSubmit(path[0], false)
+					&& (hstate = history.state === null ? -1 : history.state.step)
 				)
 		},
 
 		componentDidMount: function () {
 			// if (this.isMounted)
-			window.onpopstate = this.toCrossHistory;
+			window.onpopstate = this.toCrossHistory; //to do: this event detection here?
 			this.refs.repo.focus();
 			this.props.path_short !== null
 			&& (this.refs.repo.value = this.props.path_short)
-			&& this.props.onFormSubmit(this.props.path_short);
+			&& this.props.onFormSubmit(this.props.path_short, false);
 		},
 
 		render: function () {
@@ -290,10 +297,19 @@ PART 1 : ALL REPOS REQUEST */
 				url: "/" + path[0]
 			});
 			document.title = title + ": /" + path[0];
-			if (hstate != null && hstate > history.state.step) //cf. toCrossHistory
-				return hstate = history.state.step;
-			hstate = history.state === null ? 1 : history.state.step + 1;
-			history.pushState({ step: hstate }, "/" + path[0], "/" + path[0]);
+			(	hstate != -1
+				&&
+				(	(	history.state === null //cf. toCrossHistory going back
+						&& (hstate = -1)
+					)
+					||
+					(	hstate > history.state.step //cf. toCrossHistory going back
+						&& (hstate = history.state.step)
+			)	)	)
+			||
+			(	(hstate = history.state === null ? 1 : history.state.step + 1)
+				&& history.pushState({ step: hstate }, "/" + path[0], "/" + path[0])
+			)
 		},
 
 		render: function () {
