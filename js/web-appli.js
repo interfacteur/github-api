@@ -362,6 +362,7 @@ PART 1 : ALL REPOS REQUEST */
 		toCalculateCommitters: function () {
 
 			var users = [],
+				usersKeys,
 				usersSorted = [],
 				number = 0,
 				committers,
@@ -377,8 +378,10 @@ PART 1 : ALL REPOS REQUEST */
 	["LRotherfield", "LRotherfield", "LRotherfield", "Luke Rotherfield (an.)", "Luke Rotherfield (an.)",
 	"Luke Rotherfield (an.)", "root (an.)", "root (an.)", "sebastien-roch", "sgilberg"] */
 
-			repoCommits.forEach(function (user) { //remove duplicates
-				users[user] ? ++ users[user] : users[user] = 1;
+			repoCommits.map(function (user) { //remove duplicates //to do: better than 'forEach'?
+				typeof users[user] !== "undefined" ?
+					++ users[user] :
+					users[user] = 1;
 			});
 /* console.log(users)
 	LRotherfield 	3
@@ -387,12 +390,13 @@ PART 1 : ALL REPOS REQUEST */
 	sebastien-roch 	1
 	sgilberg 	1 */
 
-			for (var k in users) {
+			usersKeys = Object.keys(users); //to do: better than 'for (var k in users)'?
+			usersKeys.map(function (key) {
 				++ number;
-				typeof usersSorted[users[k]] !== "undefined" ?
-					usersSorted[users[k]][0].push(k) :
-					usersSorted[users[k]] = [[k], users[k]];
-			}
+				typeof usersSorted[users[key]] !== "undefined" ?
+					usersSorted[users[key]][0].push(key) :
+					usersSorted[users[key]] = [[key], users[key]];
+			});
 /* console.log(usersSorted)
 	[undefined, [["sebastien-roch", "sgilberg"], 1], [["root (an.)"], 2], [["LRotherfield", "Luke Rotherfield (an.)"], 3]] */
 
@@ -474,8 +478,8 @@ to associate all possible values of previous object, with its number of commits
 cf. console.log in render function */
 			var contributors = [],
 				commitPerContribShortList = [];
-			this.props.list.forEach(function (cont) {
-				cont[0].forEach(function (con) {
+			this.props.list.map(function (cont) {
+				cont[0].map(function (con) {
 					contributors[con] = cont[1] < 5 ? "= divers" : con; //less than 5 commits, return "divers" else return contributor name
 					typeof commitPerContribShortList[contributors[con]] === "undefined"
 					&& (commitPerContribShortList[contributors[con]] = cont[1])
@@ -576,7 +580,7 @@ cf. console.log in render function */
 
 /* TABLE "LINE" */
 
-			dates.forEach(function (d, index) { //commits count
+			dates.map(function (d, index) { //commits count
 /*
 to count commits by date
 and to count commits for each contributor (short liste) by date
