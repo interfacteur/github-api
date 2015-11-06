@@ -20,10 +20,10 @@ PART 1 : ALL REPOS REQUEST */
 		getInitialState: function () {
 			var path = utilities.toGetPath();
 			return {
+				init: false,
 				request: null,
 				total_count: 0,
 				items: [],
-				len: -1,
 				path_short: path[0],
 				path_full: path[1]
 		};	},
@@ -38,10 +38,10 @@ PART 1 : ALL REPOS REQUEST */
 				cache: false,
 				success: function (got) {
 					this.setState({
+						init: true,
 						request: request_repo,
 						total_count: got.total_count,
 						items: got.items,
-						len: got.items.length,
 						path_short: path[0],
 						path_full: path[1]
 					});
@@ -67,10 +67,10 @@ PART 1 : ALL REPOS REQUEST */
 						onFormSubmit={this.loadReposFromAPI}
 						path_short={this.state.path_short} />
 					<ReposList
+						init={this.state.init}
 						request={this.state.request}
 						total_count={this.state.total_count}
 						items={this.state.items}
-						len={this.state.len}
 						path_full={this.state.path_full} />
 				</div>
 	);	}   });
@@ -143,7 +143,7 @@ PART 1 : ALL REPOS REQUEST */
 								r_path={r_path} />
 					);	}),
 
-				result = len == -1 ?
+				result = this.props.init == false ?
 
 					"" :
 
