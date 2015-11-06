@@ -91,10 +91,12 @@ PART 1 : ALL REPOS REQUEST */
 
 		handleSubmit: function (e) {
 			e.preventDefault();
-			var repo = this.refs.repo.value.trim().split("/")[0];
+			var repo = this.refs.repo.value.trim().split("/")[0],
+				user = this.refs.user.value.trim();
+			this.refs.user.value = user;
 			!! repo
 			&& (this.refs.repo.value = repo)
-			&& this.props.onFormSubmit(repo, true);
+			&& this.props.onFormSubmit(repo, true, user);
 		},
 
 		toCrossHistory: function () {
@@ -124,6 +126,7 @@ PART 1 : ALL REPOS REQUEST */
 				<form onSubmit={this.handleSubmit} action="#" method="get">
 					<input type="search" ref="repo" />
 					<input type="submit" value="Chercher" />
+					<input type="search" ref="user" placeholder="(utilisateur en option)" />
 				</form>
 	);	}   });
 
@@ -135,7 +138,7 @@ PART 1 : ALL REPOS REQUEST */
 		},
 
 		render: function () {
-			var len = this.props.len,
+			var len = this.props.items.length,
 				request = this.props.request,
 				path_full = this.props.path_full,
 
@@ -165,17 +168,24 @@ PART 1 : ALL REPOS REQUEST */
 					"" :
 
 					(len == 1 ? "Il n'y a aucun résultat pour __" + this.props.request + "__" :
-						"*"
-						+ this.props.len
-						+ "* dépôts sur *"
-						+ this.props.total_count
-						+ "* dont le nom contient le terme __"
-						+ this.props.request
-						+ "__ :"
+						len == this.props.total_count ?
+							"*"
+							+ len
+							+ "* dépôts dont le nom contient le terme __"
+							+ this.props.request
+							+ "__ :"
+							:
+							"*"
+							+ len
+							+ "* dépôts sur *"
+							+ this.props.total_count
+							+ "* dont le nom contient le terme __"
+							+ this.props.request
+							+ "__ :"
 					);
 
 			return (
-				<div id="resultsRepos">
+				<div id="resultsRepos"  className="content">
 					<div dangerouslySetInnerHTML={this.rawMarkup(result)} />
 					<ol>
 						{reposNodes}
