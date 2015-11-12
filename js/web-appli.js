@@ -5,8 +5,30 @@ novembre 2015 */
 
 (function () {
 	"use strict";
-	var hstate = -1,
+
+	var nav = {
+			hstate: -1,
+			path: utilities.getPath() /* exemple:
+http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
+	root:			/githubapi
+	visu:			/form:malsup/malsup/form
+	repo_query:		form
+	repo_owner:		:malsup
+	repo_target:	malsup/form
+	pathfull:		/form:malsup/malsup/form/enoutre
+*/
+		},
+		contentRepo = document.getElementById("contentRepo"),
 		$user;
+
+	nav.path.visu != nav.path.pathfull
+	&& ! history.replaceState(
+		{ step: history.state },
+		nav.path.visu,
+		nav.path.root + nav.path.visu)
+	&& (nav.path = utilities.getPath())
+
+	utilities.detectKeyboard();
 
 
 
@@ -20,34 +42,32 @@ PART 1 : ALL REPOS REQUEST */
 	var ContentBox = React.createClass({
 
 		getInitialState: function () {
-			var path = utilities.toGetPath();
 			return {
 				init: false,
 				request: null,
 				user: null,
 				total_count: 0,
-				items: [],
-				path_short: path[0],
-				path_full: path[1],
-				path_user: path[2]
+				items: []
 		};	},
 
 		loadReposFromAPI: function (q, val) {
 			/*	q : string
 				val === true via handle submission (ReposForm.handleSubmit)
-				val === false via history (ReposForm.toCrossHistory)
-				val === false via first loaded submission (ReposForm.componentDidMount, with final impact on toFollowDeeper)
+				val === false via history (ReposForm.crossHistory)
+				val === false via first loaded submission (ReposForm.componentDidMount, with final impact on ReposDetail.followDeeper)
 			*/
+
 			var request_repo = q.split("/")[0],
 				user = $user.val().trim(),
 				huser = user.length == 0 ? "" : ":" + user,
-				path = utilities.toGetPath(),
 				url = huser.length == 0 ?
 					api[0] + request_repo + api[1] + token :
 					api[0] + request_repo + api[6] + user + api[7] + token;
+
 			val === true
-			&& (path[1] = null); //when identic initial search form detailled result, it display again detailled result
+			&& (nav.path.repo_target = null); //note: when identic initial search from detailled result page, it display again detailled result
 			styles.loadingProgress(true);
+
 			$.ajax({
 				url: url,
 				dataType: "json",
@@ -58,16 +78,17 @@ PART 1 : ALL REPOS REQUEST */
 						request: request_repo,
 						user: huser,
 						total_count: got.total_count,
-						items: got.items,
-						path_short: path[0],
-						path_full: path[1],
-						path_user: path[2]
+						items: got.items
 					});
 					document.title = title + ": /" + request_repo;
-					val === true //no pushState when navigation via history cf. ReposForm.toCrossHistory
-					&& (location.pathname.substring(1) != request_repo + huser)
-					&& (hstate = history.state === null ? 1 : history.state.step + 1)
-					&& history.pushState({ step: hstate }, request_repo + huser, "/" + request_repo + huser);
+					val === true //no pushState when navigation via history cf. ReposForm.crossHistory
+					&& (nav.path.visu.substring(1) != request_repo + huser)
+					&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
+					&& ! history.pushState(
+							{ step: nav.hstate },
+							request_repo + huser,
+							nav.path.root + "/" + request_repo + huser)
+					&& (nav.path = utilities.getPath());
 				}
 				.bind(this),
 				error: function (xhr, status, err) {
@@ -78,62 +99,71 @@ PART 1 : ALL REPOS REQUEST */
 		},
 
 		render: function () {
-			ReactDOM.unmountComponentAtNode(document.getElementById("contentRepo"));
-			styles.loadingProgress(false).hidingRepos(false);
+
+			ReactDOM.unmountComponentAtNode(contentRepo);
+
+			styles.loadingProgress(false)
+			.hidingRepos(false);
+
 			return (
 				<div>
 					<ReposForm
-						onFormSubmit={this.loadReposFromAPI}
-						path_short={this.state.path_short}
-						path_user={this.state.path_user} />
+						onFormSubmit={this.loadReposFromAPI} />
 					<ReposList
 						init={this.state.init}
 						request={this.state.request}
 						user={this.state.user}
 						total_count={this.state.total_count}
-						items={this.state.items}
-						path_full={this.state.path_full} />
+						items={this.state.items} />
 				</div>
 	);	}   });
 
 
 	var ReposForm = React.createClass({
 
-		handleSubmit: function (e) {
+		handleSubmit: function (e) { //manual submission of form
 			e.preventDefault();
+
 			var repo = this.refs.repo.value.trim().split("/")[0];
+
 			!! repo
 			&& (this.refs.repo.value = repo)
 			&& this.props.onFormSubmit(repo, true);
 		},
 
-		toCrossHistory: function () {
-			var path = utilities.toGetPath();
-			this.refs.repo.value = path[0];
-			$user.val(path[2].substring(1));
-			path[0] !== null
-			&&	(	(	(history.state === null || hstate > history.state.step) //when history back from detailled result, return to initial result by css effect (toCloseRepoInfo)
+		crossHistory: function () { //trigger either clik on link to close detailled result, either submission of form
+			nav.path = utilities.getPath()
+
+			this.refs.repo.value = nav.path.repo_query;
+
+			$user.val(nav.path.repo_owner.substring(1));
+
+			nav.path.repo_query !== null
+			&&	(	(	(history.state === null || nav.hstate > history.state.step) //when history back from detailled result, return to initial result by css effect (RepoInfo.closeRepoInfo)
 						&& $(".close").length > 0
-						&& (function () { $(".close").get(0).click(); return true })()
+						&& ! $(".close").get(0).click()
 					)
-					|| this.props.onFormSubmit(path[0], false)
-					&& (hstate = history.state === null ? -1 : history.state.step)
+					|| this.props.onFormSubmit(nav.path.repo_query, false)
+					&& (nav.hstate = history.state === null ? -1 : history.state.step)
 				)
 		},
 
-		componentDidMount: function () {
+		componentDidMount: function () { //to load datas from url
 			// if (this.isMounted)
 			$user = $("#user");
-			window.onpopstate = this.toCrossHistory; //to do: this event detection here?
+
+			window.onpopstate = this.crossHistory; //to do: this event detection here?
+
 			this.refs.repo.focus();
-			this.props.path_short !== null
-			&&	(	(this.refs.repo.value = this.props.path_short)
-					&&	(	this.props.path_user !== null
-							&& $user.val(this.props.path_user.substring(1))
+
+			nav.path.repo_query !== null
+			&&	(	(this.refs.repo.value = nav.path.repo_query)
+					&&	(	nav.path.repo_owner !== null
+							&& $user.val(nav.path.repo_owner.substring(1))
 						)
 					|| true
 				)
-			&& this.props.onFormSubmit(this.props.path_short, false);
+			&& this.props.onFormSubmit(nav.path.repo_query, false);
 		},
 
 		render: function () {
@@ -148,26 +178,113 @@ PART 1 : ALL REPOS REQUEST */
 
 	var ReposList = React.createClass({
 
-		rawMarkup: function(string) {
+/* to do: as there are often 50 instances of ReposDetail, to check if it is lighter
+	to define followDeeper aa handleGetDetails in ReposDetail,
+	or to pass it at ReposDetail as a props? */
+
+		followDeeper: function (that) { //that: binded from ReposDetail like handleGetDetails
+			if (this.hollowed)
+				return;
+			that.props.r_api
+			&& nav.path.repo_target
+			&&	(	(	that.props.r_api.split(nav.path.repo_target)[0] == api[4] //same url and link: open detailled result
+						&& (this.hollowed = true)
+						&& this.getDetails(that)
+					)
+					||
+					(	that.props.r_last //no link identical to url: clear url
+						&& ! history.replaceState(
+							{ step: history.state },
+							"/" + nav.path.repo_query + nav.path.repo_owner,
+							nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner)
+						&& (nav.path = utilities.getPath())
+					)
+				);
+		},
+
+		handleGetDetails: function (that, e) { //that: from ReposDetail this via second argument of bind function
+/* to do: to check that component could not be directly binded (form child component)
+	cf. onClick={this.props.handleGetDetails.bind(null, this)} */
+			if (utilities.newnav)
+				return;
+			e.preventDefault();
+			this.getDetails(that);
+		},
+
+		getDetails: function (that) { //that: binded from ReposDetail
+			styles.loadingProgress(true);
+			$.when(1) // empty promise
+			.then(function () {
+				return $.ajax({
+					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[3] + token,
+					dataType: "json",
+					cache: false,
+					error: function (xhr, status, err) {
+						console.error(api[2] + that.props.r_name + api[3], status, err.toString());
+						styles.loadingProgress(false);
+			}	})	}
+			.bind(that))
+			.then(function (gotContrib) {
+				return $.ajax({
+					url: api[4] + that.props.r_login + "/" + that.props.r_name + api[5] + token,
+					dataType: "json",
+					cache: false,
+					success: function (gotCommit) {
+						ReactDOM.render(
+							<RepoInfo
+								r_name={that.props.r_name}
+								r_login={that.props.r_login}
+								gotContrib={gotContrib}
+								gotCommit={gotCommit} />,
+							contentRepo)
+					}
+					.bind(that),
+					error: function (xhr, status, err) {
+						console.error(api[4] + that.props.r_name + api[5], status, err.toString());
+						styles.loadingProgress(false);
+			}	})	}
+			.bind(that));
+			return true;
+		},
+
+		rawMarkup: function (string) {
 			return { __html: marked(string.toString(), {sanitize: true}) };
 		},
 
+		componentWillMount: function () {
+			this.hollowed = false;
+		},
+
+		componentWillUpdate: function () {
+			this.hollowed = false;
+		},
+
 		render: function () {
-			var len = this.props.items.length,
+			var handleGetDetails = this.handleGetDetails,
+				followDeeper = this.followDeeper,
+				len = this.props.items.length,
 				request = this.props.request,
 				user = this.props.user,
-				path_full = this.props.path_full,
 
 				reposNodes = len <= 0 ?
 
-					<ReposDetail dname="" dclass="off" dapi="#" dgithub="#" path_full={path_full} /> :
+					<ReposDetail
+						handleGetDetails={handleGetDetails}
+						followDeeper={followDeeper}
+						dname=""
+						dclass="off"
+						dapi="#"
+						dgithub="#" /> :
 
-					this.props.items.map(function (repo) {
-						var r_api_title = "Dépôt '" + repo.full_name + "' : info sur les contributeurs et les commits",
+					this.props.items.map(function (repo, index) {
+						var r_api_title = "Dépôt '" + repo.full_name + "' : info sur ses contributeurs et commits",
 							r_github_title = "Voir le dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
-							r_path = document.location.protocol + "//" + document.location.host + "/" + request + user + "/" + repo.full_name;
+							r_path = document.location.protocol + "//" + document.location.host + nav.path.root + "/" + request + user + "/" + repo.full_name;
+
 						return (
 							<ReposDetail
+								handleGetDetails={handleGetDetails}
+								followDeeper={followDeeper}
 								r_login={repo.owner.login}
 								r_name={repo.name}
 								r_class="on"
@@ -175,20 +292,20 @@ PART 1 : ALL REPOS REQUEST */
 								r_api_title={r_api_title}
 								r_github={repo.html_url}
 								r_github_title={r_github_title}
-								path_full={path_full}
-								r_path={r_path} />
+								r_path={r_path}
+								r_last={index==len-1} />
 					);	}),
 
 				result = this.props.init == false ?
 
 					"" :
 
-					(len == 0 ? "Il n'y a aucun résultat dont le nom contienne le terme __" + this.props.request + "__" :
+					(len == 0 ? "Il n'y a aucun résultat dont le nom contienne le terme __" + request + "__" :
 						len == this.props.total_count ?
 							"*"
 							+ len
 							+ "* dépôt" + (len > 1 ? "s " : " ") + "dont le nom contient le terme __"
-							+ this.props.request
+							+ request
 							+ "__"
 							:
 							"*"
@@ -196,7 +313,7 @@ PART 1 : ALL REPOS REQUEST */
 							+ "* dépôts sur *"
 							+ this.props.total_count
 							+ "* dont le nom contient le terme __"
-							+ this.props.request
+							+ request
 							+ "__"
 					)
 					+ ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__": "")
@@ -214,61 +331,12 @@ PART 1 : ALL REPOS REQUEST */
 
 	var ReposDetail = React.createClass({
 
-		handleToGetDetails: function (e) {
-			if (utilities.newnav)
-				return;
-			e.preventDefault();
-			this.toGetDetails();
-		},
-
-		toGetDetails: function () {
-			var prom = $.when(1); // empty promise
-			styles.loadingProgress(true);
-			prom = prom.then(function () {
-				return $.ajax({
-					url: api[2] + this.props.r_login + "/" + this.props.r_name + api[3] + token,
-					dataType: "json",
-					cache: false,
-					error: function (xhr, status, err) {
-						console.error(api[2] + request_repo + api[3], status, err.toString());
-						styles.loadingProgress(false);
-				}	})
-			}.bind(this))
-			.then(function (gotContrib) {
-				return $.ajax({
-					url: api[4] + this.props.r_login + "/" + this.props.r_name + api[5] + token,
-					dataType: "json",
-					cache: false,
-					success: function (gotCommit) {
-						ReactDOM.render(
-							<RepoInfo
-								r_name={this.props.r_name}
-								r_login={this.props.r_login}
-								gotContrib={gotContrib}
-								gotCommit={gotCommit} />,
-							document.getElementById("contentRepo")
-					);	}
-					.bind(this),
-					error: function (xhr, status, err) {
-						console.error(api[4] + request_repo + api[5], status, err.toString());
-						styles.loadingProgress(false);
-				}	})
-			}.bind(this))
-		},
-
-		toFollowDeeper: function () {
-			this.props.r_api
-			&& this.props.path_full
-			&& this.props.r_api.split(this.props.path_full)[0] == api[4]
-			&& this.toGetDetails();
-		},
-
 		componentDidMount: function () {
-			this.toFollowDeeper();
+			this.props.followDeeper.call(null, this); //cf. handleGetDetails
 		},
 
 		componentDidUpdate: function () {
-			this.toFollowDeeper();
+			this.props.followDeeper.call(null, this); //cf. handleGetDetails
 		},
 
 		render: function() {
@@ -277,8 +345,8 @@ PART 1 : ALL REPOS REQUEST */
 					{this.props.r_login} : <a
 						href={this.props.r_path}
 						title={this.props.r_api_title}
-						data-api={this.props.r_api}
-						onClick={this.handleToGetDetails}
+						// data-api={this.props.r_api}
+						onClick={this.props.handleGetDetails.bind(null, this)} //cf. handleGetDetails
 						target="_blank">
 						{this.props.r_name}
 					</a>
@@ -309,46 +377,58 @@ PART 1 : ALL REPOS REQUEST */
 
 		getInitialState: function () {
 			return {
-				url: decodeURIComponent(location.pathname)
+				url: nav.path.visu
 		};	},
 
-		toCloseRepoInfo: function (e) {
-			var path = utilities.toGetPath();
+		closeRepoInfo: function (e) {
+
 			e.preventDefault();
-			ReactDOM.unmountComponentAtNode(document.getElementById("contentRepo"));
+
+			ReactDOM.unmountComponentAtNode(contentRepo);
+
 			styles.hidingRepos(false);
+
 			this.setState({
-				url: "/" + path[0]
+				url: "/" + nav.path.repo_query
 			});
-			document.title = title + ": /" + path[0];
-			(	hstate != -1
+
+			document.title = title + ": /" + nav.path.repo_query;
+			(	nav.hstate != -1 //going back in history cf. crossHistory
 				&&
-				(	(	history.state === null //cf. toCrossHistory going back
-						&& (hstate = -1)
+				(	(	history.state === null
+						&& (nav.hstate = -1)
 					)
 					||
-					(	hstate > history.state.step //cf. toCrossHistory going back
-						&& (hstate = history.state.step)
+					(	nav.hstate > history.state.step
+						&& (nav.hstate = history.state.step)
 			)	)	)
-			||
-			(	(hstate = history.state === null ? 1 : history.state.step + 1)
-				&& history.pushState({ step: hstate }, "/" + path[0], "/" + path[0] + path[2])
-			)
+			|| //going forward in history
+			(	(nav.hstate = history.state === null ? 1 : history.state.step + 1)
+				&& ! history.pushState(
+					{ step: nav.hstate },
+					"/" + nav.path.repo_query,
+					nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner)
+				&& (nav.path = utilities.getPath())
+			);
 		},
 
 		render: function () {
-			var path = utilities.toGetPath();
-			styles.loadingProgress(false).hidingRepos(true);
+			styles.loadingProgress(false)
+			.hidingRepos(true);
+
 			document.title = title + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name;
-			"/" + path[0] + path[2] + "/" + path[1] != this.state.url
-			&& (hstate = history.state === null ? 1 : history.state.step + 1)
-			&& history.pushState(
-				{ step: hstate },
+
+			"/" + nav.path.repo_query + nav.path.repo_owner + "/" + nav.path.repo_target != this.state.url
+			&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
+			&& ! history.pushState(
+				{ step: nav.hstate },
 				this.props.r_name + " de " + this.props.r_login,
-				this.state.url + "/" + this.props.r_login + "/" + this.props.r_name);
+				nav.path.root + this.state.url + "/" + this.props.r_login + "/" + this.props.r_name)
+			&& (nav.path = utilities.getPath());
+
 			return (
 				<div>
-					<a href="#" className="close" onClick={this.toCloseRepoInfo}>
+					<a href="#" className="close" onClick={this.closeRepoInfo}>
 						<span className="closeIcon">&#xF081;</span> Résultats initiaux <span className="closeIcon">&#xF081;</span>
 					</a>
 					<div className="clear">
@@ -371,12 +451,13 @@ PART 1 : ALL REPOS REQUEST */
 
 		render: function() {
 			var repoUsers = this.props.gotContrib.map(function (user) {
-				var contributor = user.type == "Anonymous" ?
-					user.name + " (anonyme)" : //anonymous
-					user.login;
-				return (
-					<RepoUserInfo login={contributor} />
+					var contributor = user.type == "Anonymous" ?
+						user.name + " (anonyme)" : //anonymous
+						user.login;
+					return (
+						<RepoUserInfo login={contributor} />
 				);	}),
+
 				users = repoUsers.length == 100 ?
 					"Au moins 100 contributeurs" :
 					repoUsers.length + " contributeurs :"; //to do: if single contributor
@@ -405,10 +486,10 @@ PART 1 : ALL REPOS REQUEST */
 
 	var RepoCommit = React.createClass({ //from commits JSON
 
-		/* this.setProps({}) in toCalculateCommitters() makes an error */
+		/* this.setProps({}) in calculateCommitters() makes an error */
 		repoCommittersG: null, //to do: how to communicate value inside object without state nor setProps (in ES6 no more valid)?
 
-		toCalculateCommitters: function () {
+		calculateCommitters: function () {
 
 			var users = [],
 				usersKeys,
@@ -481,7 +562,7 @@ PART 1 : ALL REPOS REQUEST */
 		);	},
 
 		render: function() {
-			var commits = this.toCalculateCommitters();
+			var commits = this.calculateCommitters();
 			return (
 				<div className="right">
 					<h3>
@@ -516,7 +597,7 @@ PART 1 : ALL REPOS REQUEST */
 
 	var Timeline = React.createClass({
 
-		toDetermineContributors: function () {
+		determineContributors: function () {
 /*
 - to create object
 with login as key and login as value if at less 5 commits
@@ -527,6 +608,7 @@ to associate all possible values of previous object, with its number of commits
 cf. console.log in render function */
 			var contributors = [],
 				commitPerContribShortList = [];
+
 			this.props.list.map(function (cont) {
 				cont[0].map(function (con) {
 					contributors[con] = cont[1] < 5 ? "= divers" : con; //less than 5 commits, return "divers" else return contributor name
@@ -537,10 +619,11 @@ cf. console.log in render function */
 				.bind(this));
 			}
 			.bind(this));
+
 			return [contributors, commitPerContribShortList];
 		},
 
-		toCalculateDates: function () {
+		calculateDates: function () {
 			return this.props.gotCommit.map(function (com) {
 				return [new Date(com.commit.author.date), (com.author && com.author.login) || com.commit.author.name + " (an.)"];
 			}).sort(function (a, b) {
@@ -548,7 +631,7 @@ cf. console.log in render function */
 		});	},
 
 		render: function () {
-			var slice = this.toDetermineContributors(),
+			var slice = this.determineContributors(),
 				contributors = slice[0],
 				commitPerContribShortList = slice[1],
 /* console.log(contributors)
@@ -560,7 +643,7 @@ cf. console.log in render function */
 /* console.log(commitPerContribShortList)
 	divers	10 */
 
-				dates = this.toCalculateDates(),
+				dates = this.calculateDates(),
 				dlast = dates.length - 1,
 				start = dates[0][0],
 				startMs = start.getTime(),
@@ -611,6 +694,7 @@ cf. console.log in render function */
 /* TABLE HEAD */
 
 			intoHead[0][3] = intoHead[0][1].getTime(); //initialisations
+
 			for (var i = 1; i < 50; ++i) { //initialisations
 				intoHead[i] = [new Date(intoHead[i - 1][2] + slice), new Date(intoHead[i - 1][3] + slice)];
 				intoHead[i][2] = intoHead[i][0].getTime();
@@ -667,7 +751,7 @@ and to count commits for each contributor (short liste) by date
 				<table>
 					<caption title="Chronologie des derniers commits, à partir des plus anciens en premières colonnes,
 						et avec détail des contributeurs les plus importants à partir de la troisième ligne du tableau">
-						Chronologie des derniers commits<br /> entre le {utilities.toGetFullDate(start)} et le {utilities.toGetFullDate(end)}
+						Chronologie des derniers commits<br /> entre le {utilities.getFullDate(start)} et le {utilities.getFullDate(end)}
 					</caption>
 					<thead>
 						<tr>
@@ -694,7 +778,7 @@ and to count commits for each contributor (short liste) by date
 	var TimelineThead = React.createClass({
 
 		render: function () {
-			var title = "Du " + utilities.toGetFullDate(this.props.date0) + " au " + utilities.toGetFullDate(this.props.date1),
+			var title = "Du " + utilities.getFullDate(this.props.date0) + " au " + utilities.getFullDate(this.props.date1),
 				date = this.props.index == 1 || this.props.index % 5 == 0 ? utilities.toGetDate(this.props.date0) : "";
 			return (
 				<th scop="col">

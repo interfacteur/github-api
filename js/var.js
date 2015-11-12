@@ -3,6 +3,14 @@ Gaëtan Langhade, Interfacteur
 novembre 2015 */
 
 
+var root_level = 3;
+/*
+	http://www.domain.tld/index.html : 0
+	http://www.domain.tld/level1/index.html : 1
+	http://www.domain.tld/level1/level2/index.html : 2
+*/
+
+
 var api = [
 	"https://api.github.com/search/repositories?q=",
 	"+in:name&type=Repositories&per_page=50",
@@ -14,13 +22,14 @@ var api = [
 	"&type=Repositories&per_page=50"
 ];
 
-/* to do: protéger (permet de multiples requêtes rapprochées sans erreur) */
+
 var token = "&client_id=e8ce07d7ca81454ca7ca&client_secret=58e01a1e64bc997753cf364b80f53d922468722c";
 
 
-
 var re = {
-	path_full: /^\/[^\/]+\/[^\/]+\/[^\/]+$/
+	root_cut: new RegExp("^(\/[^\/]+){" + root_level + "}"),
+	target_cut: new RegExp("\/[^\/]+\/([^\/]+\/[^\/]+)"),
+	visu_cut: new RegExp("((\/[^\/]+){1,3})")
 }
 
 

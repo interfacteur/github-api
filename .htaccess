@@ -1,19 +1,46 @@
 Options +FollowSymlinks
 RewriteEngine on
 
+
+# Solution pour http://homework:8888/e1/in--interfaces/githubapi//// ?
+#	RewriteCond %{REQUEST_URI} ^(.*/githubapi/)/+$
+#	RewriteRule . %1 [L,R]
+
+
 <IfModule dir_module>
 
-	RewriteRule (.+)/+$ /$1 [L,R]
-		#reduire les slash doubles en slash unique
 
-	DirectoryIndex /index.html
-		#index.html est la page d'accueil par defaut
+# Enlever les slashes multiples
+	#http://stackoverflow.com/questions/17080652/issue-in-removing-double-or-more-slashes-from-url-by-htaccess
+	RewriteCond %{REQUEST_URI} ^(.*)/{2,}(.*)$
+	RewriteRule . %1/%2 [L,R]
 
-	RewriteRule index.html$ / [R]
-		#reecrire index.html en /
 
-	ErrorDocument 404 /
-		#index.html est la page 404
+# Path repo/user en repo:user
+	RewriteCond %{REQUEST_URI} !([^\.]+\.[^\.]+)$
+	RewriteCond %{REQUEST_URI} ^(.*/githubapi/)([^/]+)/([^/]+)$
+	RewriteRule . %1%2:%3 [L,R]
+	# RewriteRule (e1/in--interfaces/githubapi/[^/]+)/([^/]+)$ http://homework:8888/$1:$2
+
+
+# Enlever les slashs finaux
+	RewriteRule (.+[^/])/+$ http://homework:8888/e1/in--interfaces/githubapi/$1 [L,R]
+	# RewriteRule (.+)/+$ /$1 [L,R]
+
+
+# Rediriger toute arborescence vers l'index sans passer par une 404 ni l'afficher dans l'url
+	# http://serverfault.com/questions/160047/apache-redirect-by-without-url-rewriting
+	RewriteCond %{REQUEST_URI} !([^\.]+\.[^\.]+)$
+	RewriteRule [^/]+$ http://homework:8888/e1/in--interfaces/githubapi/ [P]
+	# ErrorDocument 404 /e1/in--interfaces/githubapi/
+
+
+# Index
+	DirectoryIndex index.html
+
+
+# Masquer le nom de fichier de l'index
+	RewriteRule index.html$ http://homework:8888/e1/in--interfaces/githubapi/ [R]
 
 
 </IfModule>
