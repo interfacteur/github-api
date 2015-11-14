@@ -671,7 +671,7 @@ PART 1 : ALL REPOS REQUEST */
 	var RepoCommitInfo = React.createClass({
 
 		render: function () {
-			var presentation = this.props.commits == 1 ? " commits" : " commit";
+			var presentation = this.props.commits == 1 ? " commit" : " commits";
 			return (
 				<li>
 					{this.props.user} : {this.props.commits}
