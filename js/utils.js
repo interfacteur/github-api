@@ -29,7 +29,9 @@ var utilities = {
 			repo_query: _query,
 			repo_owner: _owner,
 			repo_target: _target,
-			pathfull: _path
+			pathfull: _path,
+			//added later:
+			uri_base: document.location.protocol + "//" + document.location.host + _root + "/"
 /* EXEMPLES:
 http://www.domain.tld/githubapi/
 	root:			/githubapi

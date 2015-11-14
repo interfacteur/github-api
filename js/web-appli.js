@@ -300,7 +300,7 @@ PART 1 : ALL REPOS REQUEST */
 						var r_api_title = "Dépôt '" + repo.full_name + "' : détails de ses contributeurs et commits",
 							r_github_title = "Dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
 							r_avatar_title = "Profil '" + repo.owner.login + "' sur Github (nouvelle fenêtre)",
-							r_path = document.location.protocol + "//" + document.location.host + nav.path.root + "/" + request + user + "/" + repo.full_name;
+							r_path = nav.path.uri_base + request + user + "/" + repo.full_name;
 
 						return (
 							<ReposDetail
@@ -374,7 +374,8 @@ PART 1 : ALL REPOS REQUEST */
 						href={this.props.r_path}
 						title={this.props.r_api_title}
 						onClick={this.props.handleGetDetails.bind(null, this)} //cf. handleGetDetails
-						target="_blank">
+						target="_blank" //for click "newnav" from detailed result
+						>
 						{this.props.r_name}
 					</a>
 				</li>
@@ -402,6 +403,9 @@ PART 1 : ALL REPOS REQUEST */
 		};	},
 
 		closeRepoInfo: function (e) {
+			if (utilities.newnav)
+				return;
+
 			e.preventDefault();
 
 			ReactDOM.unmountComponentAtNode(contentRepo);
@@ -436,24 +440,19 @@ PART 1 : ALL REPOS REQUEST */
 
 		},
 
-		repoPrevious: function (e) {
+		repoPrevious: function (e, next) {
 			e.preventDefault();
 
-			ReactDOM.unmountComponentAtNode(contentRepo);
+			if (! utilities.newnav) {
+				ReactDOM.unmountComponentAtNode(contentRepo);
+				styles.hidingRepos(false);
+			}
 
-			styles.hidingRepos(false);
-
-			$("#resultsRepos li:eq(" + (this.props.index - 1) + ") a").get(0).click();
+			$("#resultsRepos li:eq(" + (this.props.index + (next === 1 ? 1 : - 1)) + ") a").get(0).click();
 		},
 
 		repoNext: function (e) {
-			e.preventDefault();
-
-			ReactDOM.unmountComponentAtNode(contentRepo);
-
-			styles.hidingRepos(false);
-
-			$("#resultsRepos li:eq(" + (this.props.index + 1) + ") a").get(0).click();
+			this.repoPrevious(e, 1);
 		},
 
 		render: function () {
@@ -467,7 +466,8 @@ PART 1 : ALL REPOS REQUEST */
 				previous = this.props.index == 0 ? "" : ["\uF044", "Précédent"],
 				classPrevious = this.props.index == 0 ? "inactive" : "",
 				next = this.props.index == this.props.len - 1 ? "" : ["\uF05A", "Suivant"],
-				classNext = this.props.index == this.props.len - 1 ? "inactive" : "";
+				classNext = this.props.index == this.props.len - 1 ? "inactive" : "",
+				hrefClose = nav.path.uri_base + nav.path.repo_query + nav.path.repo_owner;
 
 			styles.loadingProgress(false)
 			.hidingRepos(true);
@@ -484,7 +484,7 @@ PART 1 : ALL REPOS REQUEST */
 
 			return (
 				<div>
-					<a href="#" className="close" onClick={this.closeRepoInfo}>
+					<a href={hrefClose} className="close" onClick={this.closeRepoInfo}>
 						<span className="navIcon">&#xF062;</span> Résultats initiaux <span className="navIcon">&#xF0AA;</span>
 					</a>
 					<div className="clear">
