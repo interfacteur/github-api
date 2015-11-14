@@ -8,22 +8,38 @@
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/generiques.css">
 <link rel="stylesheet" href="css/styles.css">
-<link rel="stylesheet" href="css/_h.css">
+
+<script>
+//gradient fallback cf. http://stackoverflow.com/questions/10853507/simple-css-gradient-detection
+var elem = document.createElement("div"),
+	style = elem.style,
+	link;
+style.backgroundImage = "linear-gradient(left top, #9f9, white)";
+style.backgroundImage = "-o-linear-gradient(left top, #9f9, white)";
+style.backgroundImage = "-moz-linear-gradient(left top, #9f9, white)";
+style.backgroundImage = "-webkit-linear-gradient(left top, #9f9, white)";
+style.backgroundImage = "-ms-linear-gradient(left top, #9f9, white)";
+style.backgroundImage = "-webkit-gradient(linear, left top, right bottom, from(#9f9), to(white))";
+if (style.backgroundImage.indexOf("gradient") == -1) {
+	link = document.createElement("link");
+	link.href = "css/fallback.css";
+	link.rel = "stylesheet";
+	document.getElementsByTagName("head")[0].appendChild(link);
+}
+</script>
+
 <meta name="author" content="Gaëtan Langhade, Interfacteur">
 </head>
 
-<body>
+<body class="loading">
 
 <section>
 	<h1>Recherche de dépôts sur Github
-		<span>et info contributeurs et commits</span>
+		<span>- détails contributeurs et commits -</span>
 	</h1>
 	<div id="contentRepos"></div>
 	<div id="contentRepo" class="content"></div>
 </section>
-
-
-
 
 <script src="js/lib/react.min.js"></script>
 <script src="js/lib/react-dom.min.js"></script>
@@ -33,6 +49,7 @@
 <script src="js/var.js"></script>
 <script src="js/utils.js"></script>
 <script type="text/babel" src="js/web-appli.js"></script>
+
 </body>
 
 </html>

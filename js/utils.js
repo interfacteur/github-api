@@ -112,7 +112,7 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre/encore
 
 	toGetDate: function (date) {
 		"use strict";
-		return utilities.formatDecimal(date.getDate()) + "/" + utilities.formatDecimal(date.getMonth()) + "/" + date.getFullYear();
+		return utilities.formatDecimal(date.getDate()) + "/" + utilities.formatDecimal(date.getMonth() + 1) + "/" + date.getFullYear();
 	},
 
 	getFullDate: function (date) {
