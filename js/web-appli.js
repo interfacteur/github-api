@@ -177,9 +177,9 @@ PART 1 : ALL REPOS REQUEST */
 		render: function () {
 			return (
 				<form onSubmit={this.handleSubmit} action="#" method="get">
-					<input type="search" ref="repo" />
-					<input type="submit" value="Chercher" />
-					<input type="search" id="user" placeholder="(utilisateur comme option)" />
+					<input type="search" ref="repo" tabIndex="1" />
+					<input type="submit" value="Chercher" tabIndex="3" />
+					<input type="search" id="user" placeholder="(utilisateur comme option)" tabIndex="2" />
 				</form>
 	);	}   });
 
