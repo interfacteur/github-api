@@ -474,12 +474,12 @@ PART 1 : ALL REPOS REQUEST */
 
 			document.title = title + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name;
 
-			"/" + nav.path.repo_query + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url
+			"/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url
 			&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
 			&& ! history.pushState(
 				{ step: nav.hstate },
 				this.props.r_name + " de " + this.props.r_login,
-				nav.path.root + "/" + nav.path.repo_query + "/" + this.props.r_login + "/" + this.props.r_name)
+				nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name)
 			&& (nav.path = utilities.getPath());
 
 			return (
