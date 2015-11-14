@@ -30,7 +30,7 @@ RewriteEngine on
 
 # Rediriger toute arborescence vers l'index sans passer par une 404 ni l'afficher dans l'url
 	# http://serverfault.com/questions/160047/apache-redirect-by-without-url-rewriting
-	RewriteCond %{REQUEST_URI} !([^\.]+\.[^\.]+)$
+	RewriteCond %{REQUEST_URI} !([^\.]+\.[a-zA-Z]{2,4})$
 	RewriteRule [^/]+$ http://homework:8888/e1/in--interfaces/githubapi/ [P]
 	# ErrorDocument 404 /e1/in--interfaces/githubapi/
 
