@@ -82,7 +82,7 @@ PART 1 : ALL REPOS REQUEST */
 						items: got.items,
 						status: [status, xhr.status]
 					});
-					document.title = title + ": /" + request_repo;
+					document.title = title[0] + ": /" + request_repo + title[1];
 					val === true //no pushState when navigation via history cf. ReposForm.crossHistory
 					&& (nav.path.visu.substring(1) != request_repo + huser)
 					&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
@@ -416,7 +416,7 @@ PART 1 : ALL REPOS REQUEST */
 				url: "/" + nav.path.repo_query
 			});
 
-			document.title = title + ": /" + nav.path.repo_query;
+			document.title = title[0] + ": /" + nav.path.repo_query + title[1];
 			(	nav.hstate != -1 //going back in history cf. crossHistory
 				&&
 				(	(	history.state === null
@@ -472,7 +472,7 @@ PART 1 : ALL REPOS REQUEST */
 			styles.loadingProgress(false)
 			.hidingRepos(true);
 
-			document.title = title + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name;
+			document.title = title[0] + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name + title[1];
 
 			"/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url
 			&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
@@ -756,6 +756,7 @@ cf. console.log in render function */
 			var	startMs = start.getTime(),
 				end = dates[dlast][0],
 				duration = (end - start),
+				weeks = Math.round(duration / (100 * 60 * 60 * 24 * 7)) / 10,
 				slice = duration / 50,
 /* console.log(dates)
 	[
@@ -788,6 +789,8 @@ cf. console.log in render function */
 				intoDetails = [],
 //table details: to render footer like of table
 				timelineDetails = [];
+
+
 
 
 			for (var k in contributors) { //to do: cf. Object.keys?
@@ -861,11 +864,11 @@ and to count commits for each contributor (short liste) by date
 				<table>
 					<caption title="Chronologie des derniers commits, à partir des plus anciens en premières colonnes,
 						et avec détail des contributeurs les plus importants à partir de la troisième ligne du tableau">
-						Chronologie des {this.props.quant} commits sur {Math.round(duration / (100 * 60 * 60 * 24 * 7)) / 10} semaines<br />du {utilities.getFullDate(start)}<br />au {utilities.getFullDate(end)}
+						Chronologie des {this.props.quant} commits sur {weeks} semaine{weeks < 2 ? "" : "s"}<br />du {utilities.getFullDate(start)}<br />au {utilities.getFullDate(end)}
 					</caption>
 					<thead>
 						<tr>
-							<th scope="row">Tranches</th>
+							<th scope="row">Durées</th>
 							{timelineHead}
 						</tr>
 					</thead>
@@ -875,7 +878,7 @@ and to count commits for each contributor (short liste) by date
 							{timelineLine}
 						</tr>
 						<tr className="totaux">
-							<th scope="row">Totaux</th>
+							<th scope="row">Commits</th>
 							{timelineTotal}
 						</tr>
 						{timelineDetails}

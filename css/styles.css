@@ -129,11 +129,15 @@ th abbr	{
 	font-size: .75em;
 	text-decoration: none;
 }
+th:nth-child(2) abbr,
+th:nth-child(5n+1) abbr	{
+	color: transparent;
+}
 th code	{
 	background: rgba(255, 255, 255, .66);
 	font-size: .66em;
 	font-style: italic;
-	margin: .75em 0 0 -.25em;
+	margin: -.33em 0 0 -.33em;
 	position: absolute;
 	transform: rotate(90deg);
 	transform-origin: 0;
@@ -273,6 +277,7 @@ tbody td	{
 .totaux ~ tr td	{
 	color: #888;
 }
+thead th:nth-child(odd),
 .time td:nth-child(even),
 .totaux ~ tr td:nth-child(even)	{
 	background-color: #FAF8F8;
