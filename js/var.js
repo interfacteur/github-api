@@ -34,7 +34,7 @@ var re = {
 
 
 var title = [
-	document.title.split(":")[0],
+var title = document.title.split(":")[0];
 	" \\ Mangrove / Equatorium"
 ];
 
