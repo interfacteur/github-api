@@ -9,5 +9,5 @@ développement, en ReactJS et JavaScript fonctionnel, d'une interface de requêt
 
 L'interface : http://www.equatorium.net/e1/in--interfaces/githubapi
 
-Une présentation : http://interfacteur.blogspot.fr/2015/11/react-interface-monopage-avec-timeline.html
+Note de présentation : http://interfacteur.blogspot.fr/2015/11/react-interface-monopage-avec-timeline.html
 
