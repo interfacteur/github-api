@@ -1,0 +1,18 @@
+Web appli to search repo with Github API
+Gaëtan Langhade, Interfacteur
+novembre 2015
+
+
+TO DO
+
+
+- Développer l'alternative à pushState pour Internet Explorer 9
+
+- Tester sur Windows
+
+- Envisager un bouton de reset de l'interface.
+
+- Quel résultat détaillé pour un résultat "profond" ?
+Afficher le résultat détaillé d'un dépôt qui n'est pas dans les 50 premiers résultats, n'est pour l'instant possible qu'en limitant les résultats initiaux via la mention de l'utilisateur.
+Prévoir la possibilité de cet affichage sans passer par l'utilisateur, reviendrait à désolidariser les résultats détaillés de la liste des résultats initiaux : to do?
+
