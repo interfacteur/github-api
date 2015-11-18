@@ -868,7 +868,7 @@ and to count commits for each contributor (short liste) by date
 					</caption>
 					<thead>
 						<tr>
-							<th scope="row">Durées</th>
+							<th scope="row">Durée</th>
 							{timelineHead}
 						</tr>
 					</thead>
