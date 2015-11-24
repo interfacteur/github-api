@@ -34,7 +34,7 @@ var re = {
 
 
 var title = [
-var title = document.title.split(":")[0];
+	document.title.split(":")[0],
 	" \\ Mangrove ~ interfaces / Equatorium"
 ];
 
