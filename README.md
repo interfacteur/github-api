@@ -5,7 +5,9 @@ Github-api
 
 _Test de développement_  :
 
-développement, en ReactJS et JavaScript fonctionnel, d'une interface de requêtes vers Github
+avec ReactJS et en JavaScript fonctionnel, développement d'une interface de requêtes vers Github
+
+Une version de développement (browser.js) et une version de production (babel-preset-react, es6-promise.min.js)
 
 L'interface : http://www.equatorium.net/e1/in--interfaces/githubapi
 
