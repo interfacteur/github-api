@@ -10,7 +10,7 @@ TO DO
 
 - Envisager un bouton de reset de l'interface.
 
-- en history back : version vierge au chargement
+- en history back : version vierge du chargement
 
 - Tester sur Windows natif
 
