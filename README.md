@@ -5,7 +5,7 @@ Github-api
 
 _Test de développement_  :
 
-avec ReactJS et en JavaScript fonctionnel, développement d'une interface de requêtes vers Github
+avec ReactJS, développement d'une interface de requêtes vers Github
 
 Une version de développement : avec browser.js
 
