@@ -139,7 +139,13 @@ th code	{
 	font-style: italic;
 	margin: -.33em 0 0 -.33em;
 	position: absolute;
+	-webkit-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
 	transform: rotate(90deg);
+	-webkit-transform-origin: 0;
+	-moz-transform-origin: 0;
+	-ms-transform-origin: 0;
 	transform-origin: 0;
 }
 .time strong	{
@@ -198,6 +204,8 @@ ol	{
 .users	{
 	margin-top: 1em;
 	max-height: 19em;
+}
+.uScroll	{
 	overflow-y: auto;
 }
 li	{
@@ -289,7 +297,7 @@ thead th:nth-child(odd),
 
 /* effects and animations */
 .time td:nth-child(even)	{
-	-webkit-background: repeating-linear-gradient(0deg,
+	background-image: -webkit-repeating-linear-gradient(0deg,
 		#FFF, #FFF .95em, #8ADD6D .95em, #8ADD6D 1.05em,
 		#FFF 1.05em, #FFF 1.95em, #8ADD6D 1.95em, #8ADD6D 2.05em,
 		#FFF 2.05em, #FFF 2.95em, #8ADD6D 2.95em, #8ADD6D 3.05em,
@@ -300,7 +308,7 @@ thead th:nth-child(odd),
 		#FFF 7.05em, #FFF 7.95em, #8ADD6D 7.95em, #8ADD6D 8.05em,
 		#FFF 8.05em, #FFF 8.95em, #8ADD6D 8.95em, #8ADD6D 9.05em,
 		#FFF 9.07em, #FFF 9.94em, #60B044 9.94em, #60B044 10.07em);
-	-moz-background: repeating-linear-gradient(0deg,
+	background-image: -moz-repeating-linear-gradient(0deg,
 		#FFF, #FFF .95em, #8ADD6D .95em, #8ADD6D 1.05em,
 		#FFF 1.05em, #FFF 1.95em, #8ADD6D 1.95em, #8ADD6D 2.05em,
 		#FFF 2.05em, #FFF 2.95em, #8ADD6D 2.95em, #8ADD6D 3.05em,
@@ -311,7 +319,7 @@ thead th:nth-child(odd),
 		#FFF 7.05em, #FFF 7.95em, #8ADD6D 7.95em, #8ADD6D 8.05em,
 		#FFF 8.05em, #FFF 8.95em, #8ADD6D 8.95em, #8ADD6D 9.05em,
 		#FFF 9.07em, #FFF 9.94em, #60B044 9.94em, #60B044 10.07em);
-	background: repeating-linear-gradient(0deg,
+	background-image: repeating-linear-gradient(0deg,
 		#FFF, #FFF .95em, #8ADD6D .95em, #8ADD6D 1.05em,
 		#FFF 1.05em, #FFF 1.95em, #8ADD6D 1.95em, #8ADD6D 2.05em,
 		#FFF 2.05em, #FFF 2.95em, #8ADD6D 2.95em, #8ADD6D 3.05em,
@@ -324,7 +332,7 @@ thead th:nth-child(odd),
 		#FFF 9.07em, #FFF 9.94em, #60B044 9.94em, #60B044 10.07em);
 }
 .time td:nth-child(odd)	{
-	-webkit-background: repeating-linear-gradient(0deg,
+	background-image: -webkit-repeating-linear-gradient(0deg,
 		#FAF8F8, #FAF8F8 .95em, #8ADD6D .95em, #8ADD6D 1.05em,
 		#FAF8F8 1.05em, #FAF8F8 1.95em, #8ADD6D 1.95em, #8ADD6D 2.05em,
 		#FAF8F8 2.05em, #FAF8F8 2.95em, #8ADD6D 2.95em, #8ADD6D 3.05em,
@@ -335,7 +343,7 @@ thead th:nth-child(odd),
 		#FAF8F8 7.05em, #FAF8F8 7.95em, #8ADD6D 7.95em, #8ADD6D 8.05em,
 		#FAF8F8 8.05em, #FAF8F8 8.95em, #8ADD6D 8.95em, #8ADD6D 9.05em,
 		#FAF8F8 9.07em, #FAF8F8 9.94em, #60B044 9.94em, #60B044 10.07em);
-	-moz-background: repeating-linear-gradient(0deg,
+	background-image: -moz-repeating-linear-gradient(0deg,
 		#FAF8F8, #FAF8F8 .95em, #8ADD6D .95em, #8ADD6D 1.05em,
 		#FAF8F8 1.05em, #FAF8F8 1.95em, #8ADD6D 1.95em, #8ADD6D 2.05em,
 		#FAF8F8 2.05em, #FAF8F8 2.95em, #8ADD6D 2.95em, #8ADD6D 3.05em,
@@ -346,7 +354,7 @@ thead th:nth-child(odd),
 		#FAF8F8 7.05em, #FAF8F8 7.95em, #8ADD6D 7.95em, #8ADD6D 8.05em,
 		#FAF8F8 8.05em, #FAF8F8 8.95em, #8ADD6D 8.95em, #8ADD6D 9.05em,
 		#FAF8F8 9.07em, #FAF8F8 9.94em, #60B044 9.94em, #60B044 10.07em);
-	background: repeating-linear-gradient(0deg,
+	background-image: repeating-linear-gradient(0deg,
 		#FAF8F8, #FAF8F8 .95em, #8ADD6D .95em, #8ADD6D 1.05em,
 		#FAF8F8 1.05em, #FAF8F8 1.95em, #8ADD6D 1.95em, #8ADD6D 2.05em,
 		#FAF8F8 2.05em, #FAF8F8 2.95em, #8ADD6D 2.95em, #8ADD6D 3.05em,
@@ -382,9 +390,9 @@ body.loading > section:before	{
 	margin: 3em 0 -4em 4.5em;
 	text-align: center;
 	width: 1.2em;
-	-webkit-animation: rotation 1s linear 0s infinite;
-	-moz-animation: rotation 1s linear 0s infinite;
-	animation: rotation 1s linear 0s infinite;
+	-webkit-animation: rotation 2.4s linear 0s infinite;
+	-moz-animation: rotation 2.4s linear 0s infinite;
+	animation: rotation 2.4s linear 0s infinite;
 }
 @-webkit-keyframes rotation {
 	0% {
