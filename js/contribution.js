@@ -3,7 +3,16 @@ Gaëtan Langhade, Interfacteur
 novembre 2015 */
 
 
-var root_level = 3;
+
+/*
+	settings to be contributed
+
+	see also .htaccess */
+
+
+
+
+var root_level = 3,
 /*
 	http://www.domain.tld/index.html : 0
 	http://www.domain.tld/level1/index.html : 1
@@ -11,7 +20,7 @@ var root_level = 3;
 */
 
 
-var api = [
+api = [
 	"https://api.github.com/search/repositories?q=",
 	"+in:name&type=Repositories&per_page=50",
 	"https://api.github.com/repos/",
@@ -20,21 +29,32 @@ var api = [
 	"/commits?per_page=100",
 	"+in:name+user:",
 	"&type=Repositories&per_page=50"
-];
+],
 
 
-var token = "&client_id=e8ce07d7ca81454ca7ca&client_secret=58e01a1e64bc997753cf364b80f53d922468722c";
+token = "&client_id=e8ce07d7ca81454ca7ca&client_secret=58e01a1e64bc997753cf364b80f53d922468722c",
 
 
-var re = {
+re = {
 	root_cut: new RegExp("^(\/[^\/]+){" + root_level + "}"),
-	target_cut: new RegExp("\/[^\/]+\/([^\/]+\/[^\/]+)"),
-	visu_cut: new RegExp("((\/[^\/]+){1,3})")
-}
+	target_cut: /\/[^\/]+\/([^\/]+\/[^\/]+)/,
+	visu_cut: /((\/[^\/]+){1,3})/,
+	safari : /^((?!chrome|android).)*safari/i
+},
 
 
-var title = [
+title = [
 	document.title.split(":")[0],
 	" \\ Mangrove ~ interfaces / Equatorium"
-];
+],
+
+
+plug = {
+	gradient: "css/prod.css",
+	history: "js/prod/jquery.history.js",
+	history_adapter: "js/prod/jq-history-adapter.js",
+	promises: "js/prod/es6-promise.min.js",
+	simulate: "js/prod/jquery.simulate.js"
+};
+
 
