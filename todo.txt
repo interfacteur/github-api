@@ -6,11 +6,15 @@ novembre 2015
 TO DO
 
 
-- Développer l'alternative à pushState pour Internet Explorer 9
-
-- Tester sur Windows
+- en history back : ne pas marquer de dépôt dans les résultats généraux
 
 - Envisager un bouton de reset de l'interface.
+
+- en history back : version vierge au chargement
+
+- Tester sur Windows natif
+
+- Tester les gradient sur Safari 5 natif Mac
 
 - Quel résultat détaillé pour un résultat "profond" ?
 Afficher le résultat détaillé d'un dépôt qui n'est pas dans les 50 premiers résultats,
