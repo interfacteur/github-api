@@ -53,7 +53,6 @@ plug = {
 	gradient: "css/prod.css",
 	history: "js/prod/jquery.history.js",
 	history_adapter: "js/prod/jq-history-adapter.js",
-	promises: "js/prod/es6-promise.min.js",
 	simulate: "js/prod/jquery.simulate.js"
 };
 

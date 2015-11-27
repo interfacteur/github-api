@@ -181,16 +181,6 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form
 	);
 
 
-//emulation of promises
-	(	typeof Promise === "undefined"
-		||
-		Promise.toString().indexOf("[native code]") === -1
-	)
-	&& compat.push(
-		$("<script>", { "src" : plug.promises })
-	);
-
-
 //bug of clic on Safari 5
 	(	re.safari.test(nua)
 		&& Number(nua.split("Safari/")[1].split(".")[0]) < 535 //Safari 5
