@@ -54,7 +54,7 @@ novembre 2015 */
 			    url = huser.length == 0 ? api[0] + request_repo + api[1] + token : api[0] + request_repo + api[6] + user + api[7] + token;
 
 			val === true && (nav.path.repo_target = null); //note: when identic initial search from detailled result page, it display again detailled result
-			styles.loadingProgress(true);
+			utilities.styles.loadingProgress(true);
 
 			$.ajax({
 				url: url,
@@ -88,7 +88,7 @@ novembre 2015 */
 
 			ReactDOM.unmountComponentAtNode(contentRepo);
 
-			styles.loadingProgress(false).hidingRepos(false);
+			utilities.styles.loadingProgress(false).hidingRepos(false);
 
 			return React.createElement(
 				"div",
@@ -126,7 +126,7 @@ novembre 2015 */
 			$user.val(nav.path.repo_owner.substring(1));
 
 			nav.path.repo_query !== null && ((history.state === null || nav.hstate > history.state.step) && //when history back from detailled result, return to initial result by css effect (RepoInfo.closeRepoInfo)
-			nav.path.repo_target == null && $(".close").length > 0 && !$(".close").get(0).click() || this.props.onFormSubmit(nav.path.repo_query, false) && (nav.hstate = history.state === null ? -1 : history.state.step));
+			nav.path.repo_target == null && $(".close").length > 0 && !$(".close").simulate("click") || this.props.onFormSubmit(nav.path.repo_query, false) && (nav.hstate = history.state === null ? -1 : history.state.step));
 		},
 
 		componentDidMount: function () {
@@ -179,7 +179,7 @@ novembre 2015 */
 
 		getDetails: function (that) {
 			//that: binded from ReposDetail
-			styles.loadingProgress(true);
+			utilities.styles.loadingProgress(true);
 			$.when(1) // empty promise
 			.then((function () {
 				return $.ajax({
@@ -188,7 +188,7 @@ novembre 2015 */
 					cache: false,
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[3], status, err.toString());
-						styles.loadingProgress(false);
+						utilities.styles.loadingProgress(false);
 					} });
 			}).bind(that)).then((function (gotContrib) {
 				return $.ajax({
@@ -332,7 +332,7 @@ novembre 2015 */
 
 			ReactDOM.unmountComponentAtNode(contentRepo);
 
-			styles.hidingRepos(false);
+			utilities.styles.hidingRepos(false);
 
 			this.setState({
 				url: "/" + nav.path.repo_query
@@ -351,10 +351,10 @@ novembre 2015 */
 
 			if (!utilities.newnav) {
 				ReactDOM.unmountComponentAtNode(contentRepo);
-				styles.hidingRepos(false);
+				utilities.styles.hidingRepos(false);
 			}
 
-			$("#resultsRepos li:eq(" + (this.props.index + (next === 1 ? 1 : -1)) + ") a").get(0).click();
+			$("#resultsRepos li:eq(" + (this.props.index + (next === 1 ? 1 : -1)) + ") a").simulate("click");
 		},
 
 		repoNext: function (e) {
@@ -369,7 +369,7 @@ novembre 2015 */
 			    classNext = this.props.index == this.props.len - 1 ? "inactive" : "",
 			    hrefClose = nav.path.uri_base + nav.path.repo_query + nav.path.repo_owner;
 
-			styles.loadingProgress(false).hidingRepos(true);
+			utilities.styles.loadingProgress(false).hidingRepos(true);
 
 			document.title = title[0] + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name + title[1];
 
@@ -502,7 +502,7 @@ novembre 2015 */
 				),
 				React.createElement(
 					"ol",
-					{ className: "users" },
+					{ className: repoUsers.length < 13 ? "users" : "users uScroll" },
 					repoUsers
 				)
 			);
@@ -584,7 +584,7 @@ novembre 2015 */
 
 			this.repoCommittersG = users; //for timeline
 
-			return [committers, repoCommitters]; //for render function
+			return [committers, repoCommitters, number < 13 ? "users" : "users uScroll"]; //for render function
 		},
 
 		componentDidMount: function () {
@@ -606,7 +606,7 @@ novembre 2015 */
 				),
 				React.createElement(
 					"ol",
-					{ className: "users" },
+					{ className: commits[2] },
 					commits[1]
 				)
 			);
