@@ -67,7 +67,7 @@ PART 1 : ALL REPOS REQUEST */
 
 			val === true
 			&& (nav.path.repo_target = null); //note: when identic initial search from detailled result page, it display again detailled result
-			styles.loadingProgress(true);
+			utilities.styles.loadingProgress(true);
 
 			$.ajax({
 				url: url,
@@ -108,7 +108,7 @@ PART 1 : ALL REPOS REQUEST */
 
 			ReactDOM.unmountComponentAtNode(contentRepo);
 
-			styles.loadingProgress(false)
+			utilities.styles.loadingProgress(false)
 			.hidingRepos(false);
 
 			return (
@@ -223,7 +223,7 @@ PART 1 : ALL REPOS REQUEST */
 		},
 
 		getDetails: function (that) { //that: binded from ReposDetail
-			styles.loadingProgress(true);
+			utilities.styles.loadingProgress(true);
 			$.when(1) // empty promise
 			.then(function () {
 				return $.ajax({
@@ -232,7 +232,7 @@ PART 1 : ALL REPOS REQUEST */
 					cache: false,
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[3], status, err.toString());
-						styles.loadingProgress(false);
+						utilities.styles.loadingProgress(false);
 			}	})	}
 			.bind(that))
 			.then(function (gotContrib) {
@@ -410,7 +410,7 @@ PART 1 : ALL REPOS REQUEST */
 
 			ReactDOM.unmountComponentAtNode(contentRepo);
 
-			styles.hidingRepos(false);
+			utilities.styles.hidingRepos(false);
 
 			this.setState({
 				url: "/" + nav.path.repo_query
@@ -445,7 +445,7 @@ PART 1 : ALL REPOS REQUEST */
 
 			if (! utilities.newnav) {
 				ReactDOM.unmountComponentAtNode(contentRepo);
-				styles.hidingRepos(false);
+				utilities.styles.hidingRepos(false);
 			}
 
 			$("#resultsRepos li:eq(" + (this.props.index + (next === 1 ? 1 : - 1)) + ") a").get(0).click();
@@ -469,7 +469,7 @@ PART 1 : ALL REPOS REQUEST */
 				classNext = this.props.index == this.props.len - 1 ? "inactive" : "",
 				hrefClose = nav.path.uri_base + nav.path.repo_query + nav.path.repo_owner;
 
-			styles.loadingProgress(false)
+			utilities.styles.loadingProgress(false)
 			.hidingRepos(true);
 
 			document.title = title[0] + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name + title[1];
@@ -539,14 +539,18 @@ PART 1 : ALL REPOS REQUEST */
 
 				users = repoUsers.length == 100 ?
 					"Au moins 100 contributeurs" :
-					repoUsers.length + " contributeur" + (repoUsers.length == 1 ? "" : "s") + " :";
+					repoUsers.length + " contributeur" + (repoUsers.length == 1 ? "" : "s") + " :",
+
+				usersCl = repoUsers.length < 13 ?
+					"users" :
+					"users uScroll";
 
 			return (
 				<div className="left">
 					<h3>
 						{users}
 					</h3>
-					<ol className="users">
+					<ol className={usersCl}>
 						{repoUsers}
 					</ol>
 				</div>
@@ -642,7 +646,7 @@ PART 1 : ALL REPOS REQUEST */
 
 			this.repoCommittersG = users; //for timeline
 
-			return [committers, repoCommitters]; //for render function
+			return [committers, repoCommitters, number < 13 ? "users" : "users uScroll"]; //for render function
 		},
 
 		componentDidMount: function() {
@@ -661,7 +665,7 @@ PART 1 : ALL REPOS REQUEST */
 					<h3>
 						{commits[0]}
 					</h3>
-					<ol className="users">
+					<ol className={commits[2]}>
 						{commits[1]}
 					</ol>
 				</div>
