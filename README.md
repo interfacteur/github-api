@@ -9,7 +9,7 @@ Développement d'une interface de requêtes vers Github
 
 Une version de développement : avec browser.js
 
-Une version de production via babel-preset-react : avec es6-promise.min.js, jquery.history.js, jquery.simulate.js, fallback css
+Une version de production via babel-preset-react : jquery.history.js et gestion des ancres, jquery.simulate.js, fallback css
 
 L'interface : http://www.equatorium.net/e1/in--interfaces/githubapi
 
