@@ -5,22 +5,32 @@ novembre 2015
 
 TO DO
 
+- la recherche par utilisateur ne marche pas sur MSIE 9
+
+- null est pris littérairement par MSIE 9 dans le champ de recherche
 
 - en history back : ne pas marquer de dépôt dans les résultats généraux
 
 - Envisager un bouton de reset de l'interface.
 
-- en history back : version vierge du chargement
-
-- Tester sur Windows natif
+- d'où en history back : version vierge du chargement
 
 - Tester les gradient sur Safari 5 natif Mac
 
+- Tester sur Windows natif
+	Pourquoi MSIE 9 machine virtuelle reçoit un json plus court ? le fait de passer par un proxy php ? oui, idem sur FF
+
+- Pour l'instant MSIE 9 passe par un proxy
+	Si d'autres navigateurs sont concernés,
+	enlever la redéfinition du tableau api des commentaires conditionnels MS situés dans settings.js
+	et la situer dans error: function (xhr, status, err) {
+	càd sur MSIE 9 à greffer if (err.toString() == "No Transport")
+
 - Quel résultat détaillé pour un résultat "profond" ?
-Afficher le résultat détaillé d'un dépôt qui n'est pas dans les 50 premiers résultats,
-n'est pour l'instant possible qu'en limitant les résultats initiaux
-via la mention de l'utilisateur.
-Prévoir la possibilité de cet affichage sans passer par l'utilisateur,
-reviendrait à désolidariser les résultats détaillés
-de la liste des résultats initiaux : to do?
+	Afficher le résultat détaillé d'un dépôt qui n'est pas dans les 50 premiers résultats,
+	n'est pour l'instant possible qu'en limitant les résultats initiaux
+	via la mention de l'utilisateur.
+	Prévoir la possibilité de cet affichage sans passer par l'utilisateur,
+	reviendrait à désolidariser les résultats détaillés
+	de la liste des résultats initiaux : to do?
 
