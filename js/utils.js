@@ -7,8 +7,9 @@ novembre 2015 */
 var utilities = {
 
 //analyze url
-	getPath: function () {
+	getPath: function () { //see also bottom without pushState
 		"use strict";
+
 		var pathname = decodeURIComponent(location.pathname),
 			_root = pathname.match(re.root_cut)[0],
 			_path = pathname.split(_root)[1],
@@ -105,8 +106,11 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form
 					repo_target:	malsup/form
 					pathfull:		/form:malsup/malsup/form/enoutre/encore
 */
+
+//see also bottom without pushState
 	};	},
 
+	anchor: null,
 
 //fix numbers and dates
 	formatDecimal: function (n) {
@@ -157,6 +161,36 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form
 }	}	};
 
 
+//analyze url without pushState and with anchor
+if (typeof history.pushState === "undefined") {
+	var $b = $("body");
+	utilities.anchor = true;
+	utilities.getPath = function () { //cf. top: analyze url
+		"use strict";
+
+		var pathname = decodeURIComponent(location.pathname) + ((location.hash.length > 1 && location.href.match(re.root_msie9)) ? decodeURIComponent(location.hash.replace(/#\.?\/?/, "").split("?")[0]) : ""),
+			_root = pathname.match(re.root_cut)[0],
+			_path = pathname.split(_root)[1],
+			tract1 = _path.substring(1),
+			tract2 = tract1.length > 0 ? tract1.split("/")[0] : false,
+			_query = tract2 ? tract2.split(":")[0] : null,
+			tract3 = tract2 ? tract2.split(":")[1] : false,
+			_owner = (tract3 && tract3.length > 0) ? ":" + tract3 : "",
+			tract4 = _path.match(re.target_cut),
+			_target = tract4 ? tract4[1] : null,
+			tract5 = _path.match(re.visu_cut),
+			_visu = tract5 ? tract5[1] : "/";
+
+		return {
+			root: _root,
+			visu: _visu,
+			repo_query: _query,
+			repo_owner: _owner,
+			repo_target: _target,
+			pathfull: _path,
+			uri_base: document.location.protocol + "//" + document.location.host + _root + "/" //(added later)
+};	}	}
+
 
 //add the production scripts
 ;(function () {
@@ -170,10 +204,15 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form
 	if ($plug.length == 0)
 		return;
 
+
 //emulation of API history
 	(	typeof history === "undefined"
 		||
 		typeof history.state === "undefined"
+		||
+		typeof history.pushState === "undefined"
+		||
+		typeof history.replaceState === "undefined"
 	)
 	&& compat.push(
 		$("<script>", { "src" : plug.history }),

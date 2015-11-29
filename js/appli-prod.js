@@ -5,6 +5,10 @@ novembre 2015 */
 (function () {
 	"use strict";
 
+	if (typeof history === "undefined" || typeof history.state === "undefined" || typeof history.pushState === "undefined" || typeof history.replaceState === "undefined")
+		return $("body").html("Les scripts ne semblent pas compatibles avec ce navigateur (API history)");
+
+
 	var nav = {
 		hstate: -1,
 		path: utilities.getPath() /* exemple:
@@ -20,7 +24,15 @@ novembre 2015 */
 	    contentRepo = document.getElementById("contentRepo"),
 	    $user;
 
-	nav.path.visu != nav.path.pathfull && !history.replaceState({ step: history.state }, nav.path.visu, nav.path.root + nav.path.visu) && (nav.path = utilities.getPath());
+	utilities.anchor
+	&& nav.path.visu != "/"
+	&& !location.href.match(re.root_anchor)
+	&& (document.location.href = nav.path.root + "/#" + nav.path.visu);
+
+	if (nav.path.visu != nav.path.pathfull) {
+		history.replaceState({ step: history.state }, nav.path.visu, nav.path.root + nav.path.visu);
+		nav.path = utilities.getPath();
+	}
 
 	utilities.detectKeyboard();
 
@@ -51,8 +63,7 @@ novembre 2015 */
 			var request_repo = q.split("/")[0],
 			    user = $user.val().trim(),
 			    huser = user.length == 0 ? "" : ":" + user,
-			    url = huser.length == 0 ? api[0] + request_repo + api[1] + token : api[0] + request_repo + api[6] + user + api[7] + token;
-
+			    url = huser.length == 0 ? api[0] + request_repo + api[1] + token : api[0] + request_repo + api[5] + user + api[6] + token;
 			val === true && (nav.path.repo_target = null); //note: when identic initial search from detailled result page, it display again detailled result
 			utilities.styles.loadingProgress(true);
 
@@ -70,8 +81,12 @@ novembre 2015 */
 						status: [status, xhr.status]
 					});
 					document.title = title[0] + ": /" + request_repo + title[1];
-					val === true //no pushState when navigation via history cf. ReposForm.crossHistory
-					 && nav.path.visu.substring(1) != request_repo + huser && (nav.hstate = history.state === null ? 1 : history.state.step + 1) && !history.pushState({ step: nav.hstate }, request_repo + huser, nav.path.root + "/" + request_repo + huser) && (nav.path = utilities.getPath());
+					if (val === true //no pushState when navigation via history cf. ReposForm.crossHistory
+						&& nav.path.visu.substring(1) != request_repo + huser) {
+						nav.hstate = history.state === null ? 1 : history.state.step + 1;
+						history.pushState({ step: nav.hstate }, request_repo + huser, nav.path.root + "/" + request_repo + huser);
+						nav.path = utilities.getPath();
+					}
 				}).bind(this),
 				error: function (xhr, status, err) {
 					console.error(api[0] + request_repo + api[1], status, err.toString());
@@ -119,6 +134,10 @@ novembre 2015 */
 
 		crossHistory: function () {
 			//trigger either clik on link to close detailled result, either submission of form
+
+			if (utilities.anchor && $b.hasClass("loading"))
+				return;
+
 			nav.path = utilities.getPath();
 
 			this.refs.repo.value = nav.path.repo_query;
@@ -135,6 +154,9 @@ novembre 2015 */
 			$user = $("#user");
 
 			window.onpopstate = this.crossHistory;
+
+			utilities.anchor
+			&& (window.onhashchange = this.crossHistory);
 
 			this.refs.repo.focus();
 
@@ -161,10 +183,16 @@ novembre 2015 */
 		followDeeper: function (that) {
 			//that: binded from ReposDetail like handleGetDetails
 			if (this.hollowed) return;
-			that.props.r_api && nav.path.repo_target && (that.props.r_api.split(nav.path.repo_target)[0] == api[4] //same url and link: open detailled result
-			 && (this.hollowed = true) && this.getDetails(that) && $("[href*='" + nav.path.visu + "']").addClass("active") || that.props.r_last //no link identical to url: clear url
-			 && !history.replaceState({ step: history.state }, "/" + nav.path.repo_query + nav.path.repo_owner, nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner) && (nav.path = utilities.getPath()));
-		},
+			if (that.props.r_api && nav.path.repo_target) {
+				if (that.props.r_api.split(nav.path.repo_target)[0] == api[7]) { //same url and link: open detailled result
+					this.hollowed = true;
+					this.getDetails(that);
+					$("[href*='" + nav.path.visu + "']").addClass("active");
+				}
+				else if (that.props.r_last) { //no link identical to url: clear url
+					history.replaceState({ step: history.state }, "/" + nav.path.repo_query + nav.path.repo_owner, nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner);
+					nav.path = utilities.getPath();
+		}	}	},
 
 		handleGetDetails: function (that, e) {
 			//that: from ReposDetail this via second argument of bind function
@@ -192,7 +220,7 @@ novembre 2015 */
 					} });
 			}).bind(that)).then((function (gotContrib) {
 				return $.ajax({
-					url: api[4] + that.props.r_login + "/" + that.props.r_name + api[5] + token,
+					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[4] + token,
 					dataType: "json",
 					cache: false,
 					success: (function (gotCommit) {
@@ -210,7 +238,7 @@ novembre 2015 */
 							gotCommit: gotCommit }), contentRepo);
 					}).bind(that),
 					error: function (xhr, status, err) {
-						console.error(api[4] + that.props.r_name + api[5], status, err.toString());
+						console.error(api[2] + that.props.r_name + api[4], status, err.toString());
 						this.success(xhr.responseJSON);
 					} });
 			}).bind(that));
@@ -231,6 +259,7 @@ novembre 2015 */
 		},
 
 		render: function () {
+
 			var handleGetDetails = this.handleGetDetails,
 			    followDeeper = this.followDeeper,
 			    len = this.props.items.length,
@@ -248,7 +277,6 @@ novembre 2015 */
 				    r_github_title = "Dépôt '" + repo.full_name + "' sur Github (nouvelle fenêtre)",
 				    r_avatar_title = "Profil '" + repo.owner.login + "' sur Github (nouvelle fenêtre)",
 				    r_path = nav.path.uri_base + request + user + "/" + repo.full_name;
-
 				return React.createElement(ReposDetail, {
 					handleGetDetails: handleGetDetails,
 					followDeeper: followDeeper,
@@ -268,7 +296,6 @@ novembre 2015 */
 					len: len });
 			}),
 			    result = this.props.init == false ? "" : (len == 0 ? "Il n'y a aucun résultat dont le nom contienne le terme __" + request + "__" : len == this.props.total_count ? "*__" + len + "__* dépôt" + (len > 1 ? "s " : " ") + "dont le nom contient le terme __" + request + "__" : "*__" + len + "__* dépôts sur *__" + this.props.total_count + "__* dont le nom contient le terme __" + request + "__") + ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__" : "") + (this.props.status[0] == "error" && this.props.status[1] == 422 ? " - *celui-ci semble n'avoir aucun dépôt public*" : "") + (len == 0 ? "" : " :");
-
 			return React.createElement(
 				"div",
 				{ id: "resultsRepos", className: className },
@@ -340,8 +367,15 @@ novembre 2015 */
 
 			document.title = title[0] + ": /" + nav.path.repo_query + title[1];
 			nav.hstate != -1 //going back in history cf. crossHistory
-			 && (history.state === null && (nav.hstate = -1) || nav.hstate > history.state.step && (nav.hstate = history.state.step)) || //going forward in history
-			(nav.hstate = history.state === null ? 1 : history.state.step + 1) && !history.pushState({ step: nav.hstate }, "/" + nav.path.repo_query, nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner) && (nav.path = utilities.getPath());
+			 && ((history.state === null && (nav.hstate = -1)) || nav.hstate > history.state.step && (nav.hstate = history.state.step)) || //going forward in history
+			(	(nav.hstate = history.state === null ? 1 : history.state.step + 1)
+				&& (function () {
+					history.pushState(
+						{ step: nav.hstate },
+						"/" + nav.path.repo_query,
+						nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner);
+					nav.path = utilities.getPath();
+			})()	);
 
 			$(".active").length > 0 && $(".active").get(0).focus();
 		},
@@ -373,7 +407,11 @@ novembre 2015 */
 
 			document.title = title[0] + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name + title[1];
 
-			"/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url && (nav.hstate = history.state === null ? 1 : history.state.step + 1) && !history.pushState({ step: nav.hstate }, this.props.r_name + " de " + this.props.r_login, nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name) && (nav.path = utilities.getPath());
+			if ("/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url) {
+				nav.hstate = history.state === null ? 1 : history.state.step + 1;
+				history.pushState({ step: nav.hstate }, this.props.r_name + " de " + this.props.r_login, nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name);
+				nav.path = utilities.getPath();
+			}
 
 			return React.createElement(
 				"div",

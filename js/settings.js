@@ -25,18 +25,18 @@ api = [
 	"+in:name&type=Repositories&per_page=50",
 	"https://api.github.com/repos/",
 	"/contributors?per_page=100000&anon=1",
-	"https://api.github.com/repos/",
 	"/commits?per_page=100",
 	"+in:name+user:",
-	"&type=Repositories&per_page=50"
+	"&type=Repositories&per_page=50",
+	"https://api.github.com/repos/" //because of MSIE 9
 ],
-
 
 token = "&client_id=e8ce07d7ca81454ca7ca&client_secret=58e01a1e64bc997753cf364b80f53d922468722c",
 
 
 re = {
-	root_cut: new RegExp("^(\/[^\/]+){" + root_level + "}"),
+	root_cut: new RegExp("^(/[^/]+){" + root_level + "}"),
+	root_anchor: new RegExp("^https?://[^/]+(/[^/]+){" + root_level + "}/#"),
 	target_cut: /\/[^\/]+\/([^\/]+\/[^\/]+)/,
 	visu_cut: /((\/[^\/]+){1,3})/,
 	safari : /^((?!chrome|android).)*safari/i
@@ -53,7 +53,16 @@ plug = {
 	gradient: "css/prod.css",
 	history: "js/prod/jquery.history.js",
 	history_adapter: "js/prod/jq-history-adapter.js",
-	simulate: "js/prod/jquery.simulate.js"
+	simulate: "js/prod/jquery.simulate.js",
+	msie9_1: "js/prod/proxies/repositories.php?query=",
+	msie9_2: "js/prod/proxies/repos.php?query="
 };
 
 
+/* crossdomain on MSIE9: cor solutions don't work
+	=> proxy */
+/*@cc_on
+parseInt(navigator.userAgent.toLowerCase().split("msie")[1]) < 10
+&& (api[0] = plug.msie9_1)
+&& (api[2] = plug.msie9_2);
+@*/

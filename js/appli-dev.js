@@ -21,12 +21,13 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 		contentRepo = document.getElementById("contentRepo"),
 		$user;
 
-	nav.path.visu != nav.path.pathfull
-	&& ! history.replaceState(
-		{ step: history.state },
-		nav.path.visu,
-		nav.path.root + nav.path.visu)
-	&& (nav.path = utilities.getPath());
+	if (nav.path.visu != nav.path.pathfull) {
+		history.replaceState(
+			{ step: history.state },
+			nav.path.visu,
+			nav.path.root + nav.path.visu);
+		nav.path = utilities.getPath();
+	}
 
 	utilities.detectKeyboard();
 
@@ -63,7 +64,7 @@ PART 1 : ALL REPOS REQUEST */
 				huser = user.length == 0 ? "" : ":" + user,
 				url = huser.length == 0 ?
 					api[0] + request_repo + api[1] + token :
-					api[0] + request_repo + api[6] + user + api[7] + token;
+					api[0] + request_repo + api[5] + user + api[6] + token;
 
 			val === true
 			&& (nav.path.repo_target = null); //note: when identic initial search from detailled result page, it display again detailled result
@@ -83,15 +84,15 @@ PART 1 : ALL REPOS REQUEST */
 						status: [status, xhr.status]
 					});
 					document.title = title[0] + ": /" + request_repo + title[1];
-					val === true //no pushState when navigation via history cf. ReposForm.crossHistory
-					&& (nav.path.visu.substring(1) != request_repo + huser)
-					&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
-					&& ! history.pushState(
+					if (val === true //no pushState when navigation via history cf. ReposForm.crossHistory
+						&& nav.path.visu.substring(1) != request_repo + huser) {
+						nav.hstate = history.state === null ? 1 : history.state.step + 1;
+						history.pushState(
 							{ step: nav.hstate },
 							request_repo + huser,
-							nav.path.root + "/" + request_repo + huser)
-					&& (nav.path = utilities.getPath());
-				}
+							nav.path.root + "/" + request_repo + huser);
+						nav.path = utilities.getPath();
+				}	}
 				.bind(this),
 				error: function (xhr, status, err) {
 					console.error(api[0] + request_repo + api[1], status, err.toString());
@@ -193,23 +194,19 @@ PART 1 : ALL REPOS REQUEST */
 		followDeeper: function (that) { //that: binded from ReposDetail like handleGetDetails
 			if (this.hollowed)
 				return;
-			that.props.r_api
-			&& nav.path.repo_target
-			&&	(	(	that.props.r_api.split(nav.path.repo_target)[0] == api[4] //same url and link: open detailled result
-						&& (this.hollowed = true)
-						&& this.getDetails(that)
-						&& $("[href*='" + nav.path.visu + "']").addClass("active")
-					)
-					||
-					(	that.props.r_last //no link identical to url: clear url
-						&& ! history.replaceState(
-							{ step: history.state },
-							"/" + nav.path.repo_query + nav.path.repo_owner,
-							nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner)
-						&& (nav.path = utilities.getPath())
-					)
-				);
-		},
+			if (that.props.r_api && nav.path.repo_target) {
+				if (that.props.r_api.split(nav.path.repo_target)[0] == api[7]) { //same url and link: open detailled result
+					this.hollowed = true;
+					this.getDetails(that);
+					$("[href*='" + nav.path.visu + "']").addClass("active");
+				}
+				else if (that.props.r_last) { //no link identical to url: clear url
+					history.replaceState(
+						{ step: history.state },
+						"/" + nav.path.repo_query + nav.path.repo_owner,
+						nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner);
+					nav.path = utilities.getPath();
+		}	}	},
 
 		handleGetDetails: function (that, e) { //that: from ReposDetail this via second argument of bind function
 /* to do: to check that component could not be directly binded (form child component)
@@ -237,7 +234,7 @@ PART 1 : ALL REPOS REQUEST */
 			.bind(that))
 			.then(function (gotContrib) {
 				return $.ajax({
-					url: api[4] + that.props.r_login + "/" + that.props.r_name + api[5] + token,
+					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[4] + token,
 					dataType: "json",
 					cache: false,
 					success: function (gotCommit) {
@@ -258,7 +255,7 @@ PART 1 : ALL REPOS REQUEST */
 					)	}
 					.bind(that),
 					error: function (xhr, status, err) {
-						console.error(api[4] + that.props.r_name + api[5], status, err.toString());
+						console.error(api[2] + that.props.r_name + api[4], status, err.toString());
 						this.success(xhr.responseJSON);
 			}	})	}
 			.bind(that));
@@ -428,12 +425,13 @@ PART 1 : ALL REPOS REQUEST */
 			)	)	)
 			|| //going forward in history
 			(	(nav.hstate = history.state === null ? 1 : history.state.step + 1)
-				&& ! history.pushState(
-					{ step: nav.hstate },
-					"/" + nav.path.repo_query,
-					nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner)
-				&& (nav.path = utilities.getPath())
-			);
+				&& (function () {
+					history.pushState(
+						{ step: nav.hstate },
+						"/" + nav.path.repo_query,
+						nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner);
+					nav.path = utilities.getPath();
+			})()	);
 
 			$(".active").length > 0
 			&& $(".active").get(0).focus();
@@ -474,13 +472,14 @@ PART 1 : ALL REPOS REQUEST */
 
 			document.title = title[0] + ": " + this.state.url.split("/")[1] + "/" + this.props.r_login + "/" + this.props.r_name + title[1];
 
-			"/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url
-			&& (nav.hstate = history.state === null ? 1 : history.state.step + 1)
-			&& ! history.pushState(
-				{ step: nav.hstate },
-				this.props.r_name + " de " + this.props.r_login,
-				nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name)
-			&& (nav.path = utilities.getPath());
+			if ("/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name != this.state.url) {
+				nav.hstate = history.state === null ? 1 : history.state.step + 1;
+				history.pushState(
+					{ step: nav.hstate },
+					this.props.r_name + " de " + this.props.r_login,
+					nav.path.root + "/" + nav.path.repo_query + nav.path.repo_owner + "/" + this.props.r_login + "/" + this.props.r_name);
+				nav.path = utilities.getPath();
+			}
 
 			return (
 				<div>
