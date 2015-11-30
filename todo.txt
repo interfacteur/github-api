@@ -5,15 +5,15 @@ novembre 2015
 
 TO DO
 
-- la recherche par utilisateur ne marche pas sur MSIE 9
+- La recherche par utilisateur ne marche pas sur MSIE 9
 
 - null est pris littérairement par MSIE 9 dans le champ de recherche
 
-- en history back : ne pas marquer de dépôt dans les résultats généraux
+- En history back : ne pas marquer de dépôt dans les résultats généraux
 
 - Envisager un bouton de reset de l'interface.
 
-- d'où en history back : version vierge du chargement
+- D'où en history back : version vierge du chargement
 
 - Tester les gradient sur Safari 5 natif Mac
 
