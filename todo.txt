@@ -5,32 +5,55 @@ novembre 2015
 
 TO DO
 
-- La recherche par utilisateur ne marche pas sur MSIE 9
+- Dev : traiter séparément l'erreur de l'utilisateur inexistant de celle de l'utilisateur ne possédant aucun dépôt
+	Recherche du dépôt X sur l'utilisateur existant Y qui ne possède aucun dépôt, retourne erreur 422
+	Recherche du dépôt X sur l'utilisateur existant Y qui ne possède pas de dépôt X, retourne "total_count": 0 []
+	Recherche du dépôt X sur l'utilisateur inexistant Y retourne l'erreur 422
+	NB : l'erreur du dépôt vide est 409
 
-- null est pris littérairement par MSIE 9 dans le champ de recherche
+- Dev : contrôle du format ASCII du nom de l'utilisateur
 
-- En history back : ne pas marquer de dépôt dans les résultats généraux
 
-- Envisager un bouton de reset de l'interface.
+- Ergo : en history back : ne pas marquer de dépôt dans les résultats généraux
 
-- D'où en history back : version vierge du chargement
+- Ergo : envisager un bouton de reset de l'interface.
 
-- Tester les gradient sur Safari 5 natif Mac
+- Ergo : en history back : la version vierge du chargement
 
-- Tester sur Windows natif
-	Pourquoi MSIE 9 machine virtuelle reçoit un json plus court ? le fait de passer par un proxy php ? oui, idem sur FF
+- Ergo : paramétrer le nombre de résultats par page, 10, 20, 30 ou 50 ?
 
-- Pour l'instant MSIE 9 passe par un proxy
+- Ergo : 50 (ou 10, 20 etc.) résultats suivants sur la recherche initiale :
+	- cf. point "quel résulat détaillé… ?"
+
+- Ergo : quel résultat détaillé pour un résultat "profond" ?
+	Afficher le résultat détaillé d'un dépôt qui n'est pas dans les 50 premiers résultats,
+	n'est pour l'instant possible qu'en limitant les résultats initiaux
+	via la mention de l'utilisateur.
+	Prévoir la possibilité de cet affichage sans passer par l'utilisateur,
+	càd via l'url,
+	reviendrait à désolidariser les résultats détaillés
+	de la liste des résultats initiaux : to do?
+	Autre solution : si élargissement des résultats aux 1000 premiers via des paramètres de pagination
+	le résultat détaillé d'une profondeur (supérieure à 50 et) inférieure à 1001
+	peut être directement affiché à partir de l'url,
+	le problème consistant alors à afficher par dessous la liste "solidaire" des résultats initiaux où il apparaît
+
+- Compat : la recherche par utilisateur ne marche pas sur MSIE 9
+
+- Compat : null est pris littérairement par MSIE 9 dans le champ de recherche
+
+
+- Compat : pour l'instant MSIE 9 passe par un proxy
+	Tester JSONP, tester <script>
 	Si d'autres navigateurs sont concernés,
 	enlever la redéfinition du tableau api des commentaires conditionnels MS situés dans settings.js
 	et la situer dans error: function (xhr, status, err) {
 	càd sur MSIE 9 à greffer if (err.toString() == "No Transport")
 
-- Quel résultat détaillé pour un résultat "profond" ?
-	Afficher le résultat détaillé d'un dépôt qui n'est pas dans les 50 premiers résultats,
-	n'est pour l'instant possible qu'en limitant les résultats initiaux
-	via la mention de l'utilisateur.
-	Prévoir la possibilité de cet affichage sans passer par l'utilisateur,
-	reviendrait à désolidariser les résultats détaillés
-	de la liste des résultats initiaux : to do?
+- Compat : tester les gradient sur Safari 5 natif Mac
+
+- Compat : tester sur Windows natif
+	Pourquoi MSIE 9 machine virtuelle reçoit un json plus court ? le fait de passer par un proxy php ? oui, idem sur FF
+
+
 

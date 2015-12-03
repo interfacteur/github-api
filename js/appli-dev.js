@@ -341,7 +341,7 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 							+ "__"
 					)
 					+ ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__": "")
-					+ ((this.props.status[0] == "error" && this.props.status[1] == 422) ? (" - *celui-ci semble n'avoir aucun dépôt public*") : "")
+					+ ((this.props.status[0] == "error" && this.props.status[1] == 422) ? (" - *celui-ci semble n'avoir aucun dépôt public*") : "") //to do: non-existent user
 					+ (len == 0 ? "" : " :");
 
 			return (
