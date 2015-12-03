@@ -23,6 +23,7 @@ TO DO
 - Ergo : paramétrer le nombre de résultats par page, 10, 20, 30 ou 50 ?
 
 - Ergo : 50 (ou 10, 20 etc.) résultats suivants sur la recherche initiale :
+	- à répercuter sur résultats détaillés précédent et suivant
 	- cf. point "quel résulat détaillé… ?"
 
 - Ergo : quel résultat détaillé pour un résultat "profond" ?
