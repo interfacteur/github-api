@@ -40,7 +40,7 @@ TO DO
 	le problème consistant alors à afficher par dessous la liste "solidaire" des résultats initiaux où il apparaît
 
 
-- Compat : sur Safari 5, le chargement initial d'un résultat "profond"
+- Compat : sur Safari 5 en version de production, le chargement initial d'un résultat "profond"
 	ex. : http://homework:8888/e1/in--interfaces/githubapi/form/adamwathan/form
 	provoque un double render des trois composants root
 
