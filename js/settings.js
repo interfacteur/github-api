@@ -27,8 +27,7 @@ api = [
 	"/contributors?per_page=100000&anon=1",
 	"/commits?per_page=100",
 	"+in:name+user:",
-	"&type=Repositories&per_page=50",
-	"https://api.github.com/repos/" //because of MSIE 9
+	"&type=Repositories&per_page=50"
 ],
 
 token = "&client_id=e8ce07d7ca81454ca7ca&client_secret=58e01a1e64bc997753cf364b80f53d922468722c",
@@ -58,11 +57,3 @@ plug = {
 	msie9_2: "js/prod/proxies/repos.php?query="
 };
 
-
-/* crossdomain on MSIE9: cor solutions don't work
-	=> proxy */
-/*@cc_on
-parseInt(navigator.userAgent.toLowerCase().split("msie")[1]) < 10
-&& (api[0] = plug.msie9_1)
-&& (api[2] = plug.msie9_2);
-@*/

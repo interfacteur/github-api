@@ -69,32 +69,47 @@ novembre 2015 */
 
 			$.ajax({
 				url: url,
-				dataType: "json",
-				cache: false,
-				success: (function (got, status, xhr) {
+				jsonp: "callback",
+				dataType: "jsonp",
+				success: function (got, stat, xhr) {
+					var statusCode,
+						statusName,
+						items,
+						total_count;
+					stat != "success" //network error
+					&& (statusName = stat)
+					&& (statusCode = xhr.status)
+					|| (statusCode = got.meta.status) //status of padded json
+					&& (statusName = statusCode != 200 ? "error" : "success"); //not for error 409:  && typeof got.data.errors !=== "undefined"
+					items = statusCode != 200 ? [] : got.data.items;
+					total_count = statusCode != 200 ? 0 : got.data.total_count;
+					statusCode
 					this.setState({
 						init: true,
 						request: request_repo,
 						user: huser,
-						total_count: got.total_count,
-						items: got.items,
-						status: [status, xhr.status]
+						total_count: total_count,
+						items: items,
+						status: [statusName, statusCode]
 					});
 					document.title = title[0] + ": /" + request_repo + title[1];
 					if (val === true //no pushState when navigation via history cf. ReposForm.crossHistory
 						&& nav.path.visu.substring(1) != request_repo + huser) {
 						nav.hstate = history.state === null ? 1 : history.state.step + 1;
-						history.pushState({ step: nav.hstate }, request_repo + huser, nav.path.root + "/" + request_repo + huser);
+						history.pushState(
+							{ step: nav.hstate },
+							request_repo + huser,
+							nav.path.root + "/" + request_repo + huser);
 						nav.path = utilities.getPath();
-					}
-				}).bind(this),
-				error: function (xhr, status, err) {
+				}	}
+				.bind(this),
+				error: function (xhr, stat, err) {
 					console.error(api[0] + request_repo + api[1], status, err.toString());
 					/*
-     	possibility of error when user has no public repo
-     	for instance: https://github.com/in?tab=repositories ; https://github.com/inter?tab=repositories
-     */
-					this.success({ total_count: 0, items: [] }, status, xhr);
+						possibility of error when user has no public repo
+						for instance: https://github.com/in?tab=repositories ; https://github.com/inter?tab=repositories
+					*/
+					this.success({ total_count: 0, items: []}, stat, xhr);
 				} });
 			return true;
 		},
@@ -184,7 +199,7 @@ novembre 2015 */
 			//that: binded from ReposDetail like handleGetDetails
 			if (this.hollowed) return;
 			if (that.props.r_api && nav.path.repo_target) {
-				if (that.props.r_api.split(nav.path.repo_target)[0] == api[7]) { //same url and link: open detailled result
+				if (that.props.r_api.split(nav.path.repo_target)[0] == api[2]) { //same url and link: open detailled result
 					this.hollowed = true;
 					this.getDetails(that);
 					$("[href*='" + nav.path.visu + "']").addClass("active");
@@ -212,8 +227,8 @@ novembre 2015 */
 			.then((function () {
 				return $.ajax({
 					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[3] + token,
-					dataType: "json",
-					cache: false,
+					jsonp: "callback",
+					dataType: "jsonp",
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[3], status, err.toString());
 						utilities.styles.loadingProgress(false);
@@ -221,8 +236,8 @@ novembre 2015 */
 			}).bind(that)).then((function (gotContrib) {
 				return $.ajax({
 					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[4] + token,
-					dataType: "json",
-					cache: false,
+					jsonp: "callback",
+					dataType: "jsonp",
 					success: (function (gotCommit) {
 						ReactDOM.render(React.createElement(RepoInfo, {
 							r_name: that.props.r_name,
@@ -234,12 +249,12 @@ novembre 2015 */
 							r_avatar: that.props.r_avatar,
 							index: that.props.index,
 							len: that.props.len,
-							gotContrib: gotContrib,
-							gotCommit: gotCommit }), contentRepo);
+							gotContrib: gotContrib.data,
+							gotCommit: gotCommit.data }), contentRepo);
 					}).bind(that),
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[4], status, err.toString());
-						this.success(xhr.responseJSON);
+						utilities.styles.loadingProgress(false);
 					} });
 			}).bind(that));
 			return true;
@@ -295,7 +310,7 @@ novembre 2015 */
 					index: index,
 					len: len });
 			}),
-			    result = this.props.init == false ? "" : (len == 0 ? "Il n'y a aucun résultat dont le nom contienne le terme __" + request + "__" : len == this.props.total_count ? "*__" + len + "__* dépôt" + (len > 1 ? "s " : " ") + "dont le nom contient le terme __" + request + "__" : "*__" + len + "__* dépôts sur *__" + this.props.total_count + "__* dont le nom contient le terme __" + request + "__") + ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__" : "") + (this.props.status[0] == "error" && this.props.status[1] == 422 ? " - *celui-ci semble n'avoir aucun dépôt public*" : "") + (len == 0 ? "" : " :");
+			    result = this.props.init == false ? "" : (len == 0 ? "Il n'y a aucun résultat dont le nom contienne le terme __" + request + "__" : len == this.props.total_count ? "*__" + len + "__* dépôt" + (len > 1 ? "s " : " ") + "dont le nom contient le terme __" + request + "__" : "*__" + len + "__* dépôts sur *__" + this.props.total_count + "__* dont le nom contient le terme __" + request + "__") + ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__" : "") + (this.props.status[0] == "error" && this.props.status[1] == 422 ? " - *celui-ci semble ne pas exister ou n'avoir aucun dépôt public*" : "") + (len == 0 ? "" : " :");
 			return React.createElement(
 				"div",
 				{ id: "resultsRepos", className: className },

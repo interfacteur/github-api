@@ -5,11 +5,11 @@ novembre 2015
 
 TO DO
 
-- Dev : traiter séparément l'erreur de l'utilisateur inexistant de celle de l'utilisateur ne possédant aucun dépôt
-	Recherche du dépôt X sur l'utilisateur existant Y qui ne possède aucun dépôt, retourne erreur 422
+- Dev : traiter séparément l'erreur de l'utilisateur inexistant de celle de l'utilisateur ne possédant aucun dépôt ?
+	Recherche du dépôt X sur l'utilisateur existant Y qui ne possède aucun dépôt, retourne erreur 422 "Unprocessable Entity"
 	Recherche du dépôt X sur l'utilisateur existant Y qui ne possède pas de dépôt X, retourne "total_count": 0 []
-	Recherche du dépôt X sur l'utilisateur inexistant Y retourne l'erreur 422
-	NB : l'erreur du dépôt vide est 409
+	Recherche du dépôt X sur l'utilisateur inexistant Y retourne l'erreur 422 "Unprocessable Entity"
+	NB : l'erreur du dépôt vide est 409 "Conflict"
 
 - Dev : contrôle du format ASCII du nom de l'utilisateur
 
@@ -39,17 +39,22 @@ TO DO
 	peut être directement affiché à partir de l'url,
 	le problème consistant alors à afficher par dessous la liste "solidaire" des résultats initiaux où il apparaît
 
+
+- Compat : sur Safari 5, le chargement initial d'un résultat "profond"
+	ex. : http://homework:8888/e1/in--interfaces/githubapi/form/adamwathan/form
+	provoque un double render des trois composants root
+
 - Compat : la recherche par utilisateur ne marche pas sur MSIE 9
 
 - Compat : null est pris littérairement par MSIE 9 dans le champ de recherche
 
-
-- Compat : pour l'instant MSIE 9 passe par un proxy
-	Tester JSONP, tester <script>
-	Si d'autres navigateurs sont concernés,
-	enlever la redéfinition du tableau api des commentaires conditionnels MS situés dans settings.js
-	et la situer dans error: function (xhr, status, err) {
-	càd sur MSIE 9 à greffer if (err.toString() == "No Transport")
+- OK
+		Compat : pour l'instant MSIE 9 passe par un proxy
+			Tester JSONP, tester <script>
+			Si d'autres navigateurs sont concernés,
+			enlever la redéfinition du tableau api des commentaires conditionnels MS situés dans settings.js
+			et la situer dans error: function (xhr, status, err) {
+			càd sur MSIE 9 à greffer if (err.toString() == "No Transport")
 
 - Compat : tester les gradient sur Safari 5 natif Mac
 

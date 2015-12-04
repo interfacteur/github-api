@@ -72,16 +72,28 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 
 			$.ajax({
 				url: url,
-				dataType: "json",
-				cache: false,
-				success: function (got, status, xhr) {
+				jsonp: "callback",
+				dataType: "jsonp",
+				success: function (got, stat, xhr) {
+					var statusCode,
+						statusName,
+						items,
+						total_count;
+					stat != "success" //network error
+					&& (statusName = stat)
+					&& (statusCode = xhr.status)
+					|| (statusCode = got.meta.status) //status of padded json
+					&& (statusName = statusCode != 200 ? "error" : "success"); //not for error 409:  && typeof got.data.errors !=== "undefined"
+					items = statusCode != 200 ? [] : got.data.items;
+					total_count = statusCode != 200 ? 0 : got.data.total_count;
+					statusCode
 					this.setState({
 						init: true,
 						request: request_repo,
 						user: huser,
-						total_count: got.total_count,
-						items: got.items,
-						status: [status, xhr.status]
+						total_count: total_count,
+						items: items,
+						status: [statusName, statusCode]
 					});
 					document.title = title[0] + ": /" + request_repo + title[1];
 					if (val === true //no pushState when navigation via history cf. ReposForm.crossHistory
@@ -94,13 +106,13 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 						nav.path = utilities.getPath();
 				}	}
 				.bind(this),
-				error: function (xhr, status, err) {
+				error: function (xhr, stat, err) {
 					console.error(api[0] + request_repo + api[1], status, err.toString());
 					/*
 						possibility of error when user has no public repo
 						for instance: https://github.com/in?tab=repositories ; https://github.com/inter?tab=repositories
 					*/
-					this.success({ total_count: 0, items: []}, status, xhr);
+					this.success({ total_count: 0, items: []}, stat, xhr);
 			}	});
 			return true;
 		},
@@ -195,7 +207,7 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 			if (this.hollowed)
 				return;
 			if (that.props.r_api && nav.path.repo_target) {
-				if (that.props.r_api.split(nav.path.repo_target)[0] == api[7]) { //same url and link: open detailled result
+				if (that.props.r_api.split(nav.path.repo_target)[0] == api[2]) { //same url and link: open detailled result
 					this.hollowed = true;
 					this.getDetails(that);
 					$("[href*='" + nav.path.visu + "']").addClass("active");
@@ -225,8 +237,8 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 			.then(function () {
 				return $.ajax({
 					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[3] + token,
-					dataType: "json",
-					cache: false,
+					jsonp: "callback",
+					dataType: "jsonp",
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[3], status, err.toString());
 						utilities.styles.loadingProgress(false);
@@ -235,8 +247,8 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 			.then(function (gotContrib) {
 				return $.ajax({
 					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[4] + token,
-					dataType: "json",
-					cache: false,
+					jsonp: "callback",
+					dataType: "jsonp",
 					success: function (gotCommit) {
 						ReactDOM.render(
 							<RepoInfo
@@ -249,14 +261,14 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 								r_avatar={that.props.r_avatar}
 								index={that.props.index}
 								len={that.props.len}
-								gotContrib={gotContrib}
-								gotCommit={gotCommit} />,
+								gotContrib={gotContrib.data}
+								gotCommit={gotCommit.data} />,
 							contentRepo
 					)	}
 					.bind(that),
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[4], status, err.toString());
-						this.success(xhr.responseJSON);
+						utilities.styles.loadingProgress(false);
 			}	})	}
 			.bind(that));
 			return true;
@@ -341,11 +353,11 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 							+ "__"
 					)
 					+ ((user = $user.val().trim()) ? " et l'utilisateur " + (len == 0 ? "soit __" : "est __") + user + "__": "")
-					+ ((this.props.status[0] == "error" && this.props.status[1] == 422) ? (" - *celui-ci semble n'avoir aucun dépôt public*") : "") //to do: non-existent user
+					+ ((this.props.status[0] == "error" && this.props.status[1] == 422) ? (" - *celui-ci semble ne pas exister ou n'avoir aucun dépôt public.*") : "") //to do: non-existent user
 					+ (len == 0 ? "" : " :");
 
 			return (
-				<div id="resultsRepos"  className={className}>
+				<div id="resultsRepos" className={className}>
 					<div dangerouslySetInnerHTML={this.rawMarkup(result)} />
 					<ol>
 						{reposNodes}
