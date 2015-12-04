@@ -40,9 +40,11 @@ TO DO
 	le problème consistant alors à afficher par dessous la liste "solidaire" des résultats initiaux où il apparaît
 
 
-- Compat : sur Safari 5 en version de production, le chargement initial d'un résultat "profond"
+- Compat : sur Safari 6 en version de production, le chargement de la page sur un résultat initial
+	http://www.equatorium.net/e1/in--interfaces/githubapi/form
+	ainsi que sur Safari 5 et 6 en version de production, le chargement de la page sur un résultat "profond"
 	ex. : http://homework:8888/e1/in--interfaces/githubapi/form/adamwathan/form
-	provoque un double render des trois composants root
+	provoquent un double render des trois composants root
 
 - Compat : la recherche par utilisateur ne marche pas sur MSIE 9
 
