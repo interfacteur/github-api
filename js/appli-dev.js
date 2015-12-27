@@ -233,44 +233,39 @@ http://www.domain.tld/githubapi/form:malsup/malsup/form/enoutre
 
 		getDetails: function (that) { //that: binded from ReposDetail
 			utilities.styles.loadingProgress(true);
-			$.when(1) // empty promise
-			.then(function () {
-				return $.ajax({
+			$.when(
+				$.ajax({
 					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[3] + token,
 					jsonp: "callback",
 					dataType: "jsonp",
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[3], status, err.toString());
 						utilities.styles.loadingProgress(false);
-			}	})	}
-			.bind(that))
-			.then(function (gotContrib) {
-				return $.ajax({
+				}	}),
+				$.ajax({
 					url: api[2] + that.props.r_login + "/" + that.props.r_name + api[4] + token,
 					jsonp: "callback",
 					dataType: "jsonp",
-					success: function (gotCommit) {
-						ReactDOM.render(
-							<RepoInfo
-								r_name={that.props.r_name}
-								r_login={that.props.r_login}
-								r_github={that.props.r_github}
-								r_github_title={that.props.r_github_title}
-								r_profile={that.props.r_profile}
-								r_profile_title={that.props.r_profile_title}
-								r_avatar={that.props.r_avatar}
-								index={that.props.index}
-								len={that.props.len}
-								gotContrib={gotContrib.data}
-								gotCommit={gotCommit.data} />,
-							contentRepo
-					)	}
-					.bind(that),
 					error: function (xhr, status, err) {
 						console.error(api[2] + that.props.r_name + api[4], status, err.toString());
 						utilities.styles.loadingProgress(false);
-			}	})	}
-			.bind(that));
+			}	})	)
+			.then(function (aj1, aj2) {
+				ReactDOM.render(
+					<RepoInfo
+						r_name={that.props.r_name}
+						r_login={that.props.r_login}
+						r_github={that.props.r_github}
+						r_github_title={that.props.r_github_title}
+						r_profile={that.props.r_profile}
+						r_profile_title={that.props.r_profile_title}
+						r_avatar={that.props.r_avatar}
+						index={that.props.index}
+						len={that.props.len}
+						gotContrib={aj1[0].data}
+						gotCommit={aj2[0].data} />,
+					contentRepo
+			)	})
 			return true;
 		},
 
