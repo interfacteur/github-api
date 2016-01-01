@@ -699,8 +699,8 @@ novembre 2015 */
 				cont[0].map((function (con) {
 					contributors[con] = cont[1] < 5 ? "= divers" : con; //less than 5 commits, return "divers" else return contributor name
 					typeof commitPerContribShortList[contributors[con]] === "undefined" && (commitPerContribShortList[contributors[con]] = cont[1]) || (commitPerContribShortList[contributors[con]] += cont[1]);
-				}).bind(this));
-			}).bind(this));
+				}));
+			}));
 
 			return [contributors, commitPerContribShortList];
 		},

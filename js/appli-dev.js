@@ -718,10 +718,7 @@ cf. console.log in render function */
 					typeof commitPerContribShortList[contributors[con]] === "undefined"
 					&& (commitPerContribShortList[contributors[con]] = cont[1])
 					|| (commitPerContribShortList[contributors[con]] += cont[1]);
-				}
-				.bind(this));
-			}
-			.bind(this));
+			})	});
 
 			return [contributors, commitPerContribShortList];
 		},
